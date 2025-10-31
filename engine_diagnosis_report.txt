@@ -1,0 +1,16 @@
+Engine Audio Analysis Report
+Generated: 2025-09-24T08:32:38
+
+ANALYSIS RESULTS:
+- Total phase coupling points: 0
+- Maximum coupling strength: 0.000
+- Strong couplings (>0.9): 0
+
+DIAGNOSIS:
+- Status: NORMAL
+- Details: No significant phase coupling detected. Engine operating normally.
+
+PHASE COUPLING INTERPRETATION:
+- Normal engine: Random phase relationships, few/no couplings
+- Abnormal engine: Synchronized phases, strong couplings at specific frequencies
+- Your results indicate: No significant phase coupling detected. Engine operating normally.

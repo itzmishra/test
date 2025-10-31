@@ -1,0 +1,14 @@
+Part1 Feature Extraction Report
+Generated: 2025-09-24T14:34:19.427507 UTC
+Audio file: test.wav
+Duration (s): 9.84
+
+Feature sizes:
+mfcc_v: (20,)
+chroma: (12, 923)
+spectral_centroid: (1,)
+dwt_v: (16,)
+swt_v: (6,)
+cep_v: (3,)
+bis_feat: (5,)
+combined feature length: 63
