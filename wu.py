@@ -241,6 +241,52 @@ df = pd.DataFrame([feature_row])
 df.to_csv("all_features.csv", mode='a', header=not os.path.exists("all_features.csv"), index=False)
 print("Appended features to all_features.csv")
 
+
+
 # ---------- Summary ----------
 print(f"Combined feature vector shape: {combined_features.shape}")
 print("✅ Feature extraction complete (includes Wu 2008 DWT Energy Distribution).")
+
+
+# ---------- DWT Feature Extraction + Energy Distribution Plot ----------
+def extract_dwt_features(signal, wavelet='db20', level=9, plot=True):
+    """
+    Performs DWT decomposition up to 'level' using the given wavelet,
+    extracts energy, std, and entropy at each level,
+    and optionally plots the energy distribution (Wu 2008 style).
+    """
+    try:
+        max_level = pywt.dwt_max_level(len(signal), wavelet)
+        level = min(level, max_level)
+        coeffs = pywt.wavedec(signal, wavelet, level=level)
+    except ValueError:
+        level = pywt.dwt_max_level(len(signal), wavelet)
+        coeffs = pywt.wavedec(signal, wavelet, level=level)
+
+    dwt_features = []
+    energy_levels = []
+
+    for i, c in enumerate(coeffs):
+        energy = np.sum(np.square(c))
+        std = np.std(c)
+        prob_density = np.abs(c) / np.sum(np.abs(c)) + 1e-12
+        ent = entropy(prob_density)
+        dwt_features.extend([energy, std, ent])
+        energy_levels.append(energy)
+
+    # Normalize energies for plotting (optional)
+    energy_levels = np.array(energy_levels)
+    energy_levels = energy_levels / np.sum(energy_levels)
+
+    if plot:
+        levels = np.arange(1, len(energy_levels) + 1)
+        plt.figure(figsize=(6, 4))
+        plt.bar(levels, energy_levels, color='royalblue', edgecolor='black')
+        plt.title(f"DWT Energy Distribution ({wavelet})")
+        plt.xlabel("Levels of Decomposition")
+        plt.ylabel("Normalized Energy")
+        plt.grid(axis='y', linestyle='--', alpha=0.7)
+        plt.tight_layout()
+        plt.show()
+
+    return np.array(dwt_features)
