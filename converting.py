@@ -1,3 +1,10 @@
+# ---------------------------------------------------------
+# This script performs WAVELET-BASED DENOISING on an audio file.
+# It loads an input WAV file, removes noise using wavelet thresholding,
+# plots the original vs denoised signal, and saves the cleaned audio.
+# ---------------------------------------------------------
+
+
 import librosa
 import librosa.display
 import numpy as np

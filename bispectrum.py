@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="librosa")
 warnings.filterwarnings("ignore", category=RuntimeWarning, module="lazy_loader")
 
 # ---------- Load Audio ----------
-file = "02Label.wav"
+file = "02Label_denoised.wav"
 try:
     signal, sr = librosa.load(file, sr=48000)
 except Exception as e:
@@ -338,3 +338,4 @@ print("\n=== Bispectrum Analysis Complete ===")
 print("The bispectrum analysis reveals non-linear interactions between frequency components.")
 print(f"Maximum bispectrum value: {bispectrum_features[0]:.6f}")
 print("This can help detect abnormal engine noises through phase coupling analysis.")
+

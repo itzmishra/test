@@ -541,6 +541,51 @@ if coupling_results:
                header="f1_Hz,f2_Hz,f3_Hz,Magnitude,Coupling_Strength", comments="")
     print(f"Saved phase coupling results to {coupling_file}")
 
+def autocorrelation_delay(x, sr):
+    x = x.astype(float)
+    autocorr = np.correlate(x, x, mode='full')
+    autocorr = autocorr[len(autocorr)//2:]
+
+    peaks = np.diff(np.sign(np.diff(autocorr))) < 0
+    peak_indices = np.where(peaks)[0]
+
+    if len(peak_indices) == 0:
+        return None, autocorr
+
+    fundamental_period = peak_indices[0] / sr
+    return fundamental_period, autocorr
+
+period, ac = autocorrelation_delay(denoised_audio, sr)
+print("Fundamental repetition period:", period, "sec")
+
+def cepstral_delay(x, sr):
+    spectrum = np.fft.fft(x)
+    log_spectrum = np.log(np.abs(spectrum) + 1e-12)
+    cepstrum = np.fft.ifft(log_spectrum).real
+
+    # skip first few samples (DC peak)
+    quefrency = np.arange(len(cepstrum)) / sr
+    peak_index = np.argmax(cepstrum[10:2000]) + 10
+    delay = quefrency[peak_index]
+    return delay, cepstrum, quefrency
+
+delay, cep, q = cepstral_delay(denoised_audio, sr)
+print("Cepstral delay:", delay, "sec")
+
+
+def plot_time_delay(corr, sr, delay):
+    t = np.arange(-len(corr)//2, len(corr)//2) / sr
+    plt.figure(figsize=(12,5))
+    plt.plot(t, corr)
+    plt.axvline(delay, color='red', linestyle='--', label=f"Delay = {delay:.4f}s")
+    plt.title("Cross-Correlation Time Delay")
+    plt.xlabel("Time Lag (s)")
+    plt.ylabel("Correlation")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+
 # Save diagnosis report
 diagnosis_report = f"""Engine Audio Analysis Report
 Generated: {np.datetime64('now')}
