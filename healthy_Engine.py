@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="librosa")
 warnings.filterwarnings("ignore", category=RuntimeWarning, module="lazy_loader")
 
 # ---------- Load Audio ----------
-file = "02Diesel_healthy_denoised.wav"
+file = "02Diesel_healthy1.wav"
 try:
     y, sr = librosa.load(file, sr=48000)  # renamed to y (audio) to avoid shadowing
 except Exception as e:
