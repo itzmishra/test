@@ -18,8 +18,8 @@ import warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="librosa")
 
 # ---------- PARAMETERS ----------
-input_file = "04Label-2.wav"        # Input audio file
-output_file = "04Label-2_denoised.wav"  # Output denoised file
+input_file = "label-1.wav"        # Input audio file
+output_file = "label-1_denoised.wav"  # Output denoised file
 wavelet_type = "db4"              # Wavelet type (Daubechies 4)
 decomposition_level = 3           # Number of decomposition levels
 threshold_type = "soft"           # Threshold type: 'soft' or 'hard'

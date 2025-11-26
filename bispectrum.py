@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="librosa")
 warnings.filterwarnings("ignore", category=RuntimeWarning, module="lazy_loader")
 
 # ---------- Load Audio ----------
-file = "02Label_denoised.wav"
+file = "02Diesel_healthy_denoised.wav"
 try:
     signal, sr = librosa.load(file, sr=48000)
 except Exception as e:
@@ -52,6 +52,7 @@ waveform_data = np.column_stack((time, signal))
 csv_file = "test_waveform.csv"
 np.savetxt(csv_file, waveform_data, delimiter=",", header="Time(s),Amplitude", comments="")
 print(f"Saved waveform to {csv_file}")
+
 
 # ---------- Spectrogram ----------
 n_fft = 2048

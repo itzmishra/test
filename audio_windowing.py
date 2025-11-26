@@ -5,14 +5,14 @@ import librosa
 import warnings
 warnings.filterwarnings('ignore')
 
-def analyze_02Label_denoised_wav():
+def analyze_02Diesel_healthy_wav():
     """
     Analyze the 02Label.wav file with windowing visualization
     """
     try:
         # Load your audio file
         print("Loading 02Label.wav...")
-        audio_signal, sample_rate = librosa.load('02Label_denoised.wav', sr=None, mono=True)
+        audio_signal, sample_rate = librosa.load('02Diesel_healthy.wav', sr=None, mono=True)
         
         print(f"Successfully loaded audio!")
         print(f"Signal length: {len(audio_signal)} samples")
@@ -163,7 +163,7 @@ if __name__ == "__main__":
     print("ANALYZING 02Label.wav FILE - CLEAN WINDOWING DEMONSTRATION")
     print("=" * 60)
     
-    result = analyze_02Label_denoised_wav()
+    result = analyze_02Diesel_healthy_wav()
     
     if result:
         audio_signal, sr, win_start, win_end = result
