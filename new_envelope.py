@@ -34,9 +34,18 @@ SAVE_RESULTS = True
 SHOW_PLOTS = True
 DATA_DIR = "."  # Current directory - change if audio files are in subdirectory
 
-# File naming patterns (adjust based on your file naming convention)
-HEALTHY_PATTERNS = ["h*.wav", "healthy*.wav", "*healthy*.wav"]
-UNHEALTHY_PATTERNS = ["unh*.wav", "unhealthy*.wav", "*unhealthy*.wav", "*fault*.wav", "*knock*.wav"]
+# File loading options
+LOAD_ALL_AUDIO_FILES = True  # If True, load all audio files regardless of naming
+MANUAL_FILE_LIST = None  # Set to list of file paths to load specific files, e.g., ["file1.wav", "file2.wav"]
+AUTO_CLASSIFY_BY_NAME = True  # If True, try to classify healthy/unhealthy by filename patterns
+
+# File naming patterns (used if AUTO_CLASSIFY_BY_NAME is True)
+HEALTHY_PATTERNS = ["h*.wav", "healthy*.wav", "*healthy*.wav", "h*.mp3", "healthy*.mp3"]
+UNHEALTHY_PATTERNS = ["unh*.wav", "unhealthy*.wav", "*unhealthy*.wav", "*fault*.wav", "*knock*.wav",
+                      "unh*.mp3", "unhealthy*.mp3", "*fault*.mp3", "*knock*.mp3"]
+
+# Supported audio file extensions
+AUDIO_EXTENSIONS = ['.wav', '.mp3', '.flac', '.m4a', '.aac', '.ogg', '.wma']
 
 # ========== AMPLITUDE ENVELOPE EXTRACTION ==========
 def extract_amplitude_envelope(signal: np.ndarray, sr: int, cutoff_freq: float = 5.0) -> np.ndarray:
@@ -209,14 +218,16 @@ def load_audio_file(file_path: str, target_sr: int = TARGET_SAMPLE_RATE) -> Tupl
         return None, None
 
 
-def find_audio_files(directory: str = DATA_DIR) -> Tuple[List[str], List[str]]:
+def find_audio_files(directory: str = DATA_DIR, manual_files: Optional[List[str]] = None) -> Tuple[List[str], List[str]]:
     """
-    Find healthy and unhealthy audio files based on naming patterns.
+    Find healthy and unhealthy audio files.
     
     Parameters:
     -----------
     directory : str
         Directory to search for audio files
+    manual_files : Optional[List[str]]
+        If provided, use these specific files instead of searching
         
     Returns:
     --------
@@ -225,16 +236,61 @@ def find_audio_files(directory: str = DATA_DIR) -> Tuple[List[str], List[str]]:
     """
     healthy_files = []
     unhealthy_files = []
+    all_audio_files = []
     
-    # Find healthy files
-    for pattern in HEALTHY_PATTERNS:
-        matches = glob.glob(os.path.join(directory, pattern))
-        healthy_files.extend(matches)
+    # If manual file list is provided, use those
+    if manual_files is not None:
+        all_audio_files = [f for f in manual_files if os.path.exists(f)]
+        print(f"  Using {len(all_audio_files)} manually specified file(s)")
+    elif LOAD_ALL_AUDIO_FILES:
+        # Load all audio files regardless of naming
+        for ext in AUDIO_EXTENSIONS:
+            pattern = os.path.join(directory, f"*{ext}")
+            matches = glob.glob(pattern, recursive=False)
+            all_audio_files.extend(matches)
+        all_audio_files = sorted(list(set(all_audio_files)))
+        print(f"  Found {len(all_audio_files)} audio file(s) in directory")
+    else:
+        # Use pattern-based approach
+        for pattern in HEALTHY_PATTERNS:
+            matches = glob.glob(os.path.join(directory, pattern))
+            healthy_files.extend(matches)
+        
+        for pattern in UNHEALTHY_PATTERNS:
+            matches = glob.glob(os.path.join(directory, pattern))
+            unhealthy_files.extend(matches)
+        
+        healthy_files = sorted(list(set(healthy_files)))
+        unhealthy_files = sorted(list(set(unhealthy_files)))
     
-    # Find unhealthy files
-    for pattern in UNHEALTHY_PATTERNS:
-        matches = glob.glob(os.path.join(directory, pattern))
-        unhealthy_files.extend(matches)
+    # If we loaded all files, classify them
+    if all_audio_files:
+        if AUTO_CLASSIFY_BY_NAME:
+            for file_path in all_audio_files:
+                filename_lower = os.path.basename(file_path).lower()
+                # Check if it matches unhealthy patterns first
+                is_unhealthy = any(pattern.replace('*', '').lower() in filename_lower 
+                                 for pattern in UNHEALTHY_PATTERNS)
+                is_healthy = any(pattern.replace('*', '').lower() in filename_lower 
+                               for pattern in HEALTHY_PATTERNS)
+                
+                if is_unhealthy:
+                    unhealthy_files.append(file_path)
+                elif is_healthy:
+                    healthy_files.append(file_path)
+                else:
+                    # Default: if starts with 'h' or 'healthy', assume healthy; otherwise ask or default
+                    if filename_lower.startswith('h') or 'healthy' in filename_lower:
+                        healthy_files.append(file_path)
+                    elif filename_lower.startswith('unh') or 'unhealthy' in filename_lower or 'fault' in filename_lower or 'knock' in filename_lower:
+                        unhealthy_files.append(file_path)
+                    else:
+                        # Unclassified - default to healthy, but could be changed
+                        print(f"  ⚠ Unclassified file (defaulting to healthy): {os.path.basename(file_path)}")
+                        healthy_files.append(file_path)
+        else:
+            # If not auto-classifying, put all in healthy (user can manually classify later)
+            healthy_files = all_audio_files
     
     # Remove duplicates and sort
     healthy_files = sorted(list(set(healthy_files)))
@@ -383,60 +439,62 @@ def plot_comparison_summary(df: pd.DataFrame, save_path: Optional[str] = None):
     healthy_df = df[df['label'] == 0]
     unhealthy_df = df[df['label'] == 1]
     
-    fig = plt.figure(figsize=(18, 12))
+    # Use a cleaner style
+    plt.style.use('default')
+    
+    # Create figure with better spacing
+    fig = plt.figure(figsize=(16, 10))
     fig.suptitle('Engine Fault Detection - Amplitude Envelope Analysis Summary', 
-                 fontsize=16, fontweight='bold')
+                 fontsize=16, fontweight='bold', y=0.995)
     
-    # Plot 1: Mean envelope comparison
-    ax1 = plt.subplot(3, 3, 1)
+    # Define colors
+    healthy_color = '#06A77D'  # Green
+    unhealthy_color = '#D00000'  # Red
+    
+    # Plot 1: Mean envelope comparison - Histogram
+    ax1 = plt.subplot(2, 3, 1)
     if len(healthy_df) > 0:
-        ax1.hist(healthy_df['envelope_mean'], bins=15, alpha=0.7, label='Healthy', color='green', edgecolor='black')
+        ax1.hist(healthy_df['envelope_mean'], bins=min(15, len(healthy_df)), 
+                alpha=0.7, label='Healthy', color=healthy_color, edgecolor='white', linewidth=1.5)
     if len(unhealthy_df) > 0:
-        ax1.hist(unhealthy_df['envelope_mean'], bins=15, alpha=0.7, label='Unhealthy', color='red', edgecolor='black')
-    ax1.set_xlabel('Mean Envelope')
-    ax1.set_ylabel('Frequency')
-    ax1.set_title('Distribution of Mean Envelope')
-    ax1.legend()
-    ax1.grid(True, alpha=0.3)
+        ax1.hist(unhealthy_df['envelope_mean'], bins=min(15, len(unhealthy_df)), 
+                alpha=0.7, label='Unhealthy', color=unhealthy_color, edgecolor='white', linewidth=1.5)
+    ax1.set_xlabel('Mean Envelope', fontsize=11, fontweight='bold')
+    ax1.set_ylabel('Count', fontsize=11, fontweight='bold')
+    ax1.set_title('Distribution of Mean Envelope', fontsize=12, fontweight='bold', pad=10)
+    ax1.legend(loc='upper right', fontsize=10, framealpha=0.9)
+    ax1.grid(True, alpha=0.3, linestyle='--')
     
-    # Plot 2: Standard deviation comparison
-    ax2 = plt.subplot(3, 3, 2)
+    # Plot 2: Standard deviation comparison - Histogram
+    ax2 = plt.subplot(2, 3, 2)
     if len(healthy_df) > 0:
-        ax2.hist(healthy_df['envelope_std'], bins=15, alpha=0.7, label='Healthy', color='green', edgecolor='black')
+        ax2.hist(healthy_df['envelope_std'], bins=min(15, len(healthy_df)), 
+                alpha=0.7, label='Healthy', color=healthy_color, edgecolor='white', linewidth=1.5)
     if len(unhealthy_df) > 0:
-        ax2.hist(unhealthy_df['envelope_std'], bins=15, alpha=0.7, label='Unhealthy', color='red', edgecolor='black')
-    ax2.set_xlabel('Std Dev Envelope')
-    ax2.set_ylabel('Frequency')
-    ax2.set_title('Distribution of Envelope Variability')
-    ax2.legend()
-    ax2.grid(True, alpha=0.3)
+        ax2.hist(unhealthy_df['envelope_std'], bins=min(15, len(unhealthy_df)), 
+                alpha=0.7, label='Unhealthy', color=unhealthy_color, edgecolor='white', linewidth=1.5)
+    ax2.set_xlabel('Std Dev Envelope', fontsize=11, fontweight='bold')
+    ax2.set_ylabel('Count', fontsize=11, fontweight='bold')
+    ax2.set_title('Distribution of Envelope Variability', fontsize=12, fontweight='bold', pad=10)
+    ax2.legend(loc='upper right', fontsize=10, framealpha=0.9)
+    ax2.grid(True, alpha=0.3, linestyle='--')
     
-    # Plot 3: Kurtosis comparison
-    ax3 = plt.subplot(3, 3, 3)
+    # Plot 3: Kurtosis comparison - Histogram
+    ax3 = plt.subplot(2, 3, 3)
     if len(healthy_df) > 0:
-        ax3.hist(healthy_df['envelope_kurtosis'], bins=15, alpha=0.7, label='Healthy', color='green', edgecolor='black')
+        ax3.hist(healthy_df['envelope_kurtosis'], bins=min(15, len(healthy_df)), 
+                alpha=0.7, label='Healthy', color=healthy_color, edgecolor='white', linewidth=1.5)
     if len(unhealthy_df) > 0:
-        ax3.hist(unhealthy_df['envelope_kurtosis'], bins=15, alpha=0.7, label='Unhealthy', color='red', edgecolor='black')
-    ax3.set_xlabel('Kurtosis')
-    ax3.set_ylabel('Frequency')
-    ax3.set_title('Distribution of Envelope Kurtosis')
-    ax3.legend()
-    ax3.grid(True, alpha=0.3)
+        ax3.hist(unhealthy_df['envelope_kurtosis'], bins=min(15, len(unhealthy_df)), 
+                alpha=0.7, label='Unhealthy', color=unhealthy_color, edgecolor='white', linewidth=1.5)
+    ax3.set_xlabel('Kurtosis', fontsize=11, fontweight='bold')
+    ax3.set_ylabel('Count', fontsize=11, fontweight='bold')
+    ax3.set_title('Distribution of Envelope Kurtosis', fontsize=12, fontweight='bold', pad=10)
+    ax3.legend(loc='upper right', fontsize=10, framealpha=0.9)
+    ax3.grid(True, alpha=0.3, linestyle='--')
     
-    # Plot 4: Peak count comparison
-    ax4 = plt.subplot(3, 3, 4)
-    if len(healthy_df) > 0:
-        ax4.hist(healthy_df['peak_count'], bins=15, alpha=0.7, label='Healthy', color='green', edgecolor='black')
-    if len(unhealthy_df) > 0:
-        ax4.hist(unhealthy_df['peak_count'], bins=15, alpha=0.7, label='Unhealthy', color='red', edgecolor='black')
-    ax4.set_xlabel('Peak Count')
-    ax4.set_ylabel('Frequency')
-    ax4.set_title('Distribution of Peak Count')
-    ax4.legend()
-    ax4.grid(True, alpha=0.3)
-    
-    # Plot 5: Box plot - Mean
-    ax5 = plt.subplot(3, 3, 5)
+    # Plot 4: Box plot - Mean and Std combined
+    ax4 = plt.subplot(2, 3, 4)
     data_to_plot = []
     labels_plot = []
     if len(healthy_df) > 0:
@@ -446,57 +504,31 @@ def plot_comparison_summary(df: pd.DataFrame, save_path: Optional[str] = None):
         data_to_plot.append(unhealthy_df['envelope_mean'].values)
         labels_plot.append('Unhealthy')
     if data_to_plot:
-        ax5.boxplot(data_to_plot, labels=labels_plot)
-        ax5.set_ylabel('Mean Envelope')
-        ax5.set_title('Mean Envelope Comparison')
-        ax5.grid(True, alpha=0.3)
+        bp = ax4.boxplot(data_to_plot, labels=labels_plot, patch_artist=True, 
+                        boxprops=dict(facecolor='lightblue', alpha=0.7),
+                        medianprops=dict(color='black', linewidth=2))
+        ax4.set_ylabel('Mean Envelope', fontsize=11, fontweight='bold')
+        ax4.set_title('Mean Envelope Comparison', fontsize=12, fontweight='bold', pad=10)
+        ax4.grid(True, alpha=0.3, linestyle='--', axis='y')
     
-    # Plot 6: Box plot - Std Dev
-    ax6 = plt.subplot(3, 3, 6)
-    data_to_plot = []
-    labels_plot = []
+    # Plot 5: Scatter - Mean vs Std
+    ax5 = plt.subplot(2, 3, 5)
     if len(healthy_df) > 0:
-        data_to_plot.append(healthy_df['envelope_std'].values)
-        labels_plot.append('Healthy')
+        ax5.scatter(healthy_df['envelope_mean'], healthy_df['envelope_std'], 
+                   alpha=0.7, label='Healthy', color=healthy_color, s=120, 
+                   edgecolors='white', linewidths=1.5)
     if len(unhealthy_df) > 0:
-        data_to_plot.append(unhealthy_df['envelope_std'].values)
-        labels_plot.append('Unhealthy')
-    if data_to_plot:
-        ax6.boxplot(data_to_plot, labels=labels_plot)
-        ax6.set_ylabel('Std Dev Envelope')
-        ax6.set_title('Variability Comparison')
-        ax6.grid(True, alpha=0.3)
+        ax5.scatter(unhealthy_df['envelope_mean'], unhealthy_df['envelope_std'], 
+                   alpha=0.7, label='Unhealthy', color=unhealthy_color, s=120,
+                   edgecolors='white', linewidths=1.5)
+    ax5.set_xlabel('Mean Envelope', fontsize=11, fontweight='bold')
+    ax5.set_ylabel('Std Dev Envelope', fontsize=11, fontweight='bold')
+    ax5.set_title('Mean vs Variability', fontsize=12, fontweight='bold', pad=10)
+    ax5.legend(loc='upper right', fontsize=10, framealpha=0.9)
+    ax5.grid(True, alpha=0.3, linestyle='--')
     
-    # Plot 7: Scatter - Mean vs Std
-    ax7 = plt.subplot(3, 3, 7)
-    if len(healthy_df) > 0:
-        ax7.scatter(healthy_df['envelope_mean'], healthy_df['envelope_std'], 
-                   alpha=0.6, label='Healthy', color='green', s=100)
-    if len(unhealthy_df) > 0:
-        ax7.scatter(unhealthy_df['envelope_mean'], unhealthy_df['envelope_std'], 
-                   alpha=0.6, label='Unhealthy', color='red', s=100)
-    ax7.set_xlabel('Mean Envelope')
-    ax7.set_ylabel('Std Dev Envelope')
-    ax7.set_title('Mean vs Variability')
-    ax7.legend()
-    ax7.grid(True, alpha=0.3)
-    
-    # Plot 8: Scatter - Kurtosis vs Peak Count
-    ax8 = plt.subplot(3, 3, 8)
-    if len(healthy_df) > 0:
-        ax8.scatter(healthy_df['envelope_kurtosis'], healthy_df['peak_count'], 
-                   alpha=0.6, label='Healthy', color='green', s=100)
-    if len(unhealthy_df) > 0:
-        ax8.scatter(unhealthy_df['envelope_kurtosis'], unhealthy_df['peak_count'], 
-                   alpha=0.6, label='Unhealthy', color='red', s=100)
-    ax8.set_xlabel('Kurtosis')
-    ax8.set_ylabel('Peak Count')
-    ax8.set_title('Kurtosis vs Peak Count')
-    ax8.legend()
-    ax8.grid(True, alpha=0.3)
-    
-    # Plot 9: Feature importance (mean difference)
-    ax9 = plt.subplot(3, 3, 9)
+    # Plot 6: Feature importance (mean difference)
+    ax6 = plt.subplot(2, 3, 6)
     if len(healthy_df) > 0 and len(unhealthy_df) > 0:
         feature_cols = [col for col in df.columns if col.startswith('envelope_') or 
                        col.startswith('peak_') or col.startswith('dominant_')]
@@ -504,27 +536,27 @@ def plot_comparison_summary(df: pd.DataFrame, save_path: Optional[str] = None):
         
         mean_diffs = []
         feature_names = []
-        for feat in feature_cols[:10]:  # Top 10 features
+        for feat in feature_cols[:8]:  # Top 8 features for cleaner display
             if feat in healthy_df.columns and feat in unhealthy_df.columns:
                 healthy_mean = healthy_df[feat].mean()
                 unhealthy_mean = unhealthy_df[feat].mean()
                 diff = abs(unhealthy_mean - healthy_mean)
                 mean_diffs.append(diff)
-                feature_names.append(feat.replace('envelope_', '').replace('_', ' ').title())
+                feature_names.append(feat.replace('envelope_', '').replace('_', ' ').title()[:20])
         
         if mean_diffs:
             y_pos = np.arange(len(feature_names))
-            ax9.barh(y_pos, mean_diffs, alpha=0.7)
-            ax9.set_yticks(y_pos)
-            ax9.set_yticklabels(feature_names, fontsize=8)
-            ax9.set_xlabel('Absolute Mean Difference')
-            ax9.set_title('Feature Discriminative Power')
-            ax9.grid(True, alpha=0.3, axis='x')
+            bars = ax6.barh(y_pos, mean_diffs, alpha=0.8, color='#2E86AB', edgecolor='white', linewidth=1.5)
+            ax6.set_yticks(y_pos)
+            ax6.set_yticklabels(feature_names, fontsize=9)
+            ax6.set_xlabel('Absolute Mean Difference', fontsize=11, fontweight='bold')
+            ax6.set_title('Feature Discriminative Power', fontsize=12, fontweight='bold', pad=10)
+            ax6.grid(True, alpha=0.3, linestyle='--', axis='x')
     
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0, 1, 0.98])
     
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.savefig(save_path, dpi=300, bbox_inches='tight', facecolor='white')
         print(f"✓ Comparison plot saved to: {save_path}")
     
     if SHOW_PLOTS:
@@ -549,12 +581,21 @@ def plot_sample_envelopes(df: pd.DataFrame, n_samples: int = 4, save_path: Optio
     healthy_df = df[df['label'] == 0].head(n_samples)
     unhealthy_df = df[df['label'] == 1].head(n_samples)
     
-    fig, axes = plt.subplots(2, n_samples, figsize=(4*n_samples, 8))
+    # Adjust n_samples based on available data
+    n_samples = min(n_samples, max(len(healthy_df), len(unhealthy_df)))
+    if n_samples == 0:
+        print("No data to plot for sample envelopes")
+        return
+    
+    healthy_color = '#06A77D'
+    unhealthy_color = '#D00000'
+    
+    fig, axes = plt.subplots(2, n_samples, figsize=(5*n_samples, 8))
     if n_samples == 1:
         axes = axes.reshape(2, 1)
     
     fig.suptitle('Sample Amplitude Envelopes: Healthy vs Unhealthy', 
-                 fontsize=14, fontweight='bold')
+                 fontsize=16, fontweight='bold', y=0.995)
     
     # Plot healthy samples
     for idx, (_, row) in enumerate(healthy_df.iterrows()):
@@ -564,11 +605,23 @@ def plot_sample_envelopes(df: pd.DataFrame, n_samples: int = 4, save_path: Optio
         sr = row['_sr']
         time = np.arange(len(envelope)) / sr
         
-        axes[0, idx].plot(time, envelope, color='green', linewidth=1.5)
-        axes[0, idx].set_title(f"Healthy: {row['filename'][:20]}", fontsize=9)
-        axes[0, idx].set_xlabel('Time (s)')
-        axes[0, idx].set_ylabel('Amplitude')
-        axes[0, idx].grid(True, alpha=0.3)
+        # Downsample if too many points for cleaner display
+        if len(time) > 50000:
+            step = len(time) // 50000
+            time = time[::step]
+            envelope = envelope[::step]
+        
+        axes[0, idx].plot(time, envelope, color=healthy_color, linewidth=2, alpha=0.9)
+        axes[0, idx].set_title(f"Healthy: {row['filename'][:25]}", fontsize=11, fontweight='bold', pad=10)
+        axes[0, idx].set_xlabel('Time (s)', fontsize=10, fontweight='bold')
+        axes[0, idx].set_ylabel('Amplitude', fontsize=10, fontweight='bold')
+        axes[0, idx].grid(True, alpha=0.3, linestyle='--')
+        axes[0, idx].set_ylim(-0.1, 1.1)
+    
+    # Fill empty subplots if needed
+    for idx in range(len(healthy_df), n_samples):
+        axes[0, idx].axis('off')
+        axes[0, idx].text(0.5, 0.5, 'No data', ha='center', va='center', fontsize=12)
     
     # Plot unhealthy samples
     for idx, (_, row) in enumerate(unhealthy_df.iterrows()):
@@ -578,16 +631,28 @@ def plot_sample_envelopes(df: pd.DataFrame, n_samples: int = 4, save_path: Optio
         sr = row['_sr']
         time = np.arange(len(envelope)) / sr
         
-        axes[1, idx].plot(time, envelope, color='red', linewidth=1.5)
-        axes[1, idx].set_title(f"Unhealthy: {row['filename'][:20]}", fontsize=9)
-        axes[1, idx].set_xlabel('Time (s)')
-        axes[1, idx].set_ylabel('Amplitude')
-        axes[1, idx].grid(True, alpha=0.3)
+        # Downsample if too many points for cleaner display
+        if len(time) > 50000:
+            step = len(time) // 50000
+            time = time[::step]
+            envelope = envelope[::step]
+        
+        axes[1, idx].plot(time, envelope, color=unhealthy_color, linewidth=2, alpha=0.9)
+        axes[1, idx].set_title(f"Unhealthy: {row['filename'][:25]}", fontsize=11, fontweight='bold', pad=10)
+        axes[1, idx].set_xlabel('Time (s)', fontsize=10, fontweight='bold')
+        axes[1, idx].set_ylabel('Amplitude', fontsize=10, fontweight='bold')
+        axes[1, idx].grid(True, alpha=0.3, linestyle='--')
+        axes[1, idx].set_ylim(-0.1, 1.1)
     
-    plt.tight_layout()
+    # Fill empty subplots if needed
+    for idx in range(len(unhealthy_df), n_samples):
+        axes[1, idx].axis('off')
+        axes[1, idx].text(0.5, 0.5, 'No data', ha='center', va='center', fontsize=12)
+    
+    plt.tight_layout(rect=[0, 0, 1, 0.98])
     
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.savefig(save_path, dpi=300, bbox_inches='tight', facecolor='white')
         print(f"✓ Sample envelopes plot saved to: {save_path}")
     
     if SHOW_PLOTS:
@@ -607,7 +672,7 @@ if __name__ == "__main__":
     
     # Find audio files
     print("\n[1] SEARCHING FOR AUDIO FILES...")
-    healthy_files, unhealthy_files = find_audio_files(DATA_DIR)
+    healthy_files, unhealthy_files = find_audio_files(DATA_DIR, manual_files=MANUAL_FILE_LIST)
     
     print(f"\n✓ Found {len(healthy_files)} healthy engine sound file(s)")
     for f in healthy_files[:5]:  # Show first 5
