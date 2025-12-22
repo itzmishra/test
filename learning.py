@@ -19,7 +19,7 @@ import csv
 # --------------------
 # Config
 # --------------------
-AUDIO_FILE = "test.wav"
+AUDIO_FILE = "h5_denoised.wav"
 SR = 48000
 WAVELET = "db4"
 DWT_LEVEL = 3         # for decomposition

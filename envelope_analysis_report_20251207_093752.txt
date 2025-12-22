@@ -1,0 +1,31 @@
+======================================================================
+AMPLITUDE ENVELOPE ANALYSIS REPORT
+======================================================================
+
+Analysis Date: 2025-12-07 09:37:52
+Total Files Processed: 28
+  • Healthy: 22
+  • Unhealthy: 6
+
+CONFIGURATION:
+  Sample Rate: 48000 Hz
+  Envelope Cutoff: 5.0 Hz
+
+FEATURE STATISTICS:
+----------------------------------------------------------------------
+envelope_mean:
+  Healthy - Mean: 0.3850, Std: 0.2706
+  Unhealthy - Mean: 0.4621, Std: 0.2180
+
+envelope_std:
+  Healthy - Mean: 0.1158, Std: 0.0531
+  Unhealthy - Mean: 0.1295, Std: 0.0329
+
+envelope_kurtosis:
+  Healthy - Mean: 24.1804, Std: 30.2945
+  Unhealthy - Mean: 4.3858, Std: 8.3576
+
+peak_count:
+  Healthy - Mean: 6.9545, Std: 6.9930
+  Unhealthy - Mean: 31.1667, Std: 43.6826
+

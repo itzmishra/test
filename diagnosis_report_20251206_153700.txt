@@ -1,0 +1,23 @@
+============================================================
+ENGINE KNOCKING/MISFIRE DIAGNOSIS REPORT
+============================================================
+
+Audio File: unh3_denoised.wav
+Analysis Date: 2025-12-06 15:37:01
+Sample Rate: 48000 Hz
+Duration: 5.00 seconds
+
+DIAGNOSIS: KNOCKING/MISFIRE DETECTED
+
+DETECTION METRICS:
+  Amplitude Envelope Mean: 0.5323
+  Standard Deviation: 0.1801
+  Skewness: -0.2750
+  Kurtosis: 0.0526
+  Peaks detected: 17
+  High variation points: 0
+  Dominant knocking frequency: 7.4 Hz
+
+DETECTION REASONS:
+  • Detected 17 significant peaks above threshold
+  • High envelope variability (std=0.180)

@@ -1,0 +1,77 @@
+{
+  "name": "Your Name",
+  "title": "Automobile Engineer | Robotics & ML Researcher | Formula Student Team Manager",
+  "bio": "Passionate automobile engineer specializing in robotics, machine learning, and Formula Student competitions. Experienced in CAD/CAE, signal processing, and developing innovative engineering solutions.",
+  "shortBio": "Building the future of automotive engineering through robotics, ML, and Formula Student innovation.",
+  "email": "your.email@example.com",
+  "github": "https://github.com/yourusername",
+  "linkedin": "https://linkedin.com/in/yourusername",
+  "location": "Your Location",
+  "experience": [
+    {
+      "role": "Formula Student Team Manager",
+      "organization": "Your University/Team",
+      "period": "2023 - Present",
+      "description": "Leading a team of engineers in designing and building a Formula Student race car. Managing project timelines, coordinating between mechanical, electrical, and software teams, and ensuring competition readiness."
+    },
+    {
+      "role": "Robotics Competition Participant",
+      "organization": "IIT Techfest & Other Competitions",
+      "period": "2022 - Present",
+      "description": "Participated in multiple robotics competitions including IIT Techfest, designing and building autonomous robots for various challenges including Robosoccer and gripper mechanisms."
+    },
+    {
+      "role": "ML Research Assistant",
+      "organization": "University Research Lab",
+      "period": "2023 - Present",
+      "description": "Researching and developing machine learning models for engine fault detection using audio signal processing techniques including MFCC, FFT, and DWT."
+    }
+  ],
+  "skills": {
+    "engineering": [
+      "CAD (SolidWorks, CATIA)",
+      "CAE & FEA Analysis",
+      "ANSYS",
+      "Chassis Design",
+      "Drivetrain Design",
+      "Mechanism Design"
+    ],
+    "machineLearning": [
+      "MFCC Feature Extraction",
+      "FFT & Signal Processing",
+      "DWT (Discrete Wavelet Transform)",
+      "Machine Learning Models",
+      "Feature Engineering",
+      "Model Deployment"
+    ],
+    "robotics": [
+      "Robot Mechanisms",
+      "Gripper Design",
+      "Sensor Integration",
+      "Autonomous Navigation",
+      "Control Systems"
+    ],
+    "programming": [
+      "Python",
+      "MATLAB",
+      "C/C++",
+      "JavaScript/React",
+      "Data Analysis"
+    ],
+    "tools": [
+      "SolidWorks",
+      "ANSYS",
+      "Git",
+      "Jupyter Notebooks",
+      "TensorFlow/PyTorch"
+    ]
+  },
+  "education": [
+    {
+      "degree": "Bachelor of Engineering",
+      "field": "Automobile Engineering",
+      "institution": "Your University",
+      "period": "2020 - 2024"
+    }
+  ]
+}

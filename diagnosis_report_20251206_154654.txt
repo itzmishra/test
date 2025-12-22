@@ -1,0 +1,22 @@
+============================================================
+ENGINE KNOCKING/MISFIRE DIAGNOSIS REPORT
+============================================================
+
+Audio File: h5_denoised.wav
+Analysis Date: 2025-12-06 15:46:54
+Sample Rate: 48000 Hz
+Duration: 5.00 seconds
+
+DIAGNOSIS: KNOCKING/MISFIRE DETECTED
+
+DETECTION METRICS:
+  Amplitude Envelope Mean: 0.0992
+  Standard Deviation: 0.0764
+  Skewness: 4.4735
+  Kurtosis: 38.7257
+  Peaks detected: 0
+  High variation points: 0
+  Dominant knocking frequency: 5.4 Hz
+
+DETECTION REASONS:
+  • Heavy-tailed distribution (kurtosis=38.73)

@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="librosa")
 warnings.filterwarnings("ignore", category=RuntimeWarning, module="lazy_loader")
 
 # ---------- Load Audio ----------
-file = "h3_denoised.wav"
+file = "h14_denoised.wav"
 try:
     y, sr = librosa.load(file, sr=48000)  # renamed to y (audio) to avoid shadowing
 except Exception as e:
@@ -58,12 +58,12 @@ plt.subplot(1, 2, 2)
 plt.plot(denoised_y)
 plt.title("Denoised Audio")
 plt.tight_layout()
-plt.show()
+plt.show()#
 
 # ---------- Amplitude Envelope + Save as CSV ----------
 time = np.arange(len(y)) / sr
 waveform_data = np.column_stack((time, y))
-csv_file = "h2_test_waveform.csv"
+csv_file = "h13_test_waveform.csv"
 np.savetxt(csv_file, waveform_data, delimiter=",", header="Time(s),Amplitude", comments="")
 print(f"Saved waveform to {csv_file}")
 
@@ -224,7 +224,7 @@ def extract_swt_features(x, wavelet='db4', level=None, plot=True):
     swt_features = []
 
     if plot:
-        plt.figure(figsize=(14, 3 * level))
+        # plt.figure(figsize=(14, 3 * level))
         for i, (cA, cD) in enumerate(coeffs):
             plt.subplot(level, 2, 2*i+1)
             plt.plot(cA)
@@ -243,8 +243,8 @@ def extract_swt_features(x, wavelet='db4', level=None, plot=True):
             std = np.std(cD_arr)
             mean = np.mean(cD_arr)
             swt_features.extend([mean, std, energy])
-        plt.tight_layout()
-        plt.show()
+        # plt.tight_layout()
+        # plt.show()
 
     return np.array(swt_features)
 
@@ -468,17 +468,17 @@ print(combined_vector)
 # SAVE AS A LABELED TABLE FOR ML
 # ============================================================
 df = pd.DataFrame([combined_vector], columns=feature_names)
-df.to_csv("h2_engine_features.csv", index=False)
+df.to_csv("h13_engine_features.csv", index=False)
 
 print("\nSaved feature table as engine_features.csv")
 
 
 # ---------- Save Bispectrum Data (NEW) ----------
-bispectrum_file = "h2_test_bispectrum.csv"
+bispectrum_file = "h13_test_bispectrum.csv"
 np.savetxt(bispectrum_file, bispectrum, delimiter=",", header="Bispectrum Matrix", comments="")
 print(f"Saved bispectrum matrix to {bispectrum_file}")
 
-bispectrum_features_file = "h2_test_bispectrum_features.csv"
+bispectrum_features_file = "h13_test_bispectrum_features.csv"
 np.savetxt(bispectrum_features_file, bispectrum_features.reshape(1, -1), delimiter=",",
            header="Max,Mean,Std,Median,Energy,Entropy,MaxFreq1,MaxFreq2", comments="")
 print(f"Saved bispectrum features to {bispectrum_features_file}")

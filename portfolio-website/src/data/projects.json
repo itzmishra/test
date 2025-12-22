@@ -1,0 +1,40 @@
+{
+  "projects": [
+    {
+      "id": "fyp",
+      "title": "Sound-Based Engine Fault Detection System",
+      "category": "Final Year Project | ML & Signal Processing",
+      "shortDescription": "Advanced ML system for detecting engine faults using audio signal processing and machine learning techniques.",
+      "image": "/api/placeholder/600/400",
+      "tags": ["Machine Learning", "Signal Processing", "MFCC", "FFT", "DWT", "Python"],
+      "featured": true
+    },
+    {
+      "id": "gokart",
+      "title": "Formula Student Go-Kart Project",
+      "category": "Formula Student | Vehicle Design",
+      "shortDescription": "Complete design and development of a Formula Student go-kart with focus on acceleration events and chassis optimization.",
+      "image": "/api/placeholder/600/400",
+      "tags": ["CAD", "CAE", "Chassis Design", "Engine Tuning", "Formula Student"],
+      "featured": true
+    },
+    {
+      "id": "cozmoclench",
+      "title": "Cozmoclench Bot - Gripper Mechanism",
+      "category": "Robotics | Mechanism Design",
+      "shortDescription": "Innovative gripper design for robotics competition with size constraints (300×200×300 mm) and high precision requirements.",
+      "image": "/api/placeholder/600/400",
+      "tags": ["Robotics", "Mechanism Design", "Gripper", "CAD", "Competition"],
+      "featured": true
+    },
+    {
+      "id": "robotics",
+      "title": "Robotics Portfolio",
+      "category": "Robotics | Multiple Projects",
+      "shortDescription": "Collection of robotics projects including Robosoccer robots, aeromodelling, and various autonomous systems.",
+      "image": "/api/placeholder/600/400",
+      "tags": ["Robotics", "Autonomous Systems", "Robosoccer", "Aeromodelling"],
+      "featured": true
+    }
+  ]
+}

@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="librosa")
 warnings.filterwarnings("ignore", category=RuntimeWarning, module="lazy_loader")
 
 # ---------- Load Audio ----------
-file = "label-1_denoised1.wav"
+file = "unh4_denoised.wav"
 try:
     y, sr = librosa.load(file, sr=48000)  # renamed to y (audio) to avoid shadowing
 except Exception as e:
@@ -63,7 +63,7 @@ plt.show()
 # ---------- Amplitude Envelope + Save as CSV ----------
 time = np.arange(len(y)) / sr
 waveform_data = np.column_stack((time, y))
-csv_file = "test_waveform.csv"
+csv_file = "unh5_test_waveform.csv"
 np.savetxt(csv_file, waveform_data, delimiter=",", header="Time(s),Amplitude", comments="")
 print(f"Saved waveform to {csv_file}")
 
@@ -468,17 +468,17 @@ print(combined_vector)
 # SAVE AS A LABELED TABLE FOR ML
 # ============================================================
 df = pd.DataFrame([combined_vector], columns=feature_names)
-df.to_csv("Misfire_engine_features.csv", index=False)
+df.to_csv("unh5_engine_features.csv", index=False)
 
 print("\nSaved feature table as engine_features.csv")
 
 
 # ---------- Save Bispectrum Data (NEW) ----------
-bispectrum_file = "misfire_test_bispectrum.csv"
+bispectrum_file = "unh5_test_bispectrum.csv"
 np.savetxt(bispectrum_file, bispectrum, delimiter=",", header="Bispectrum Matrix", comments="")
 print(f"Saved bispectrum matrix to {bispectrum_file}")
 
-bispectrum_features_file = "misfire_test_bispectrum_features.csv"
+bispectrum_features_file = "unh5_test_bispectrum_features.csv"
 np.savetxt(bispectrum_features_file, bispectrum_features.reshape(1, -1), delimiter=",",
            header="Max,Mean,Std,Median,Energy,Entropy,MaxFreq1,MaxFreq2", comments="")
 print(f"Saved bispectrum features to {bispectrum_features_file}")
