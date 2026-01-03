@@ -240,10 +240,28 @@ class EngineFaultDetector:
             except Exception:
                 hilbert_env_mean = 0.0
             
-            # 7. Bispectrum Features
+            # 7. Bispectrum Features (extract once, but duplicate to match training data)
             bispectrum_features = self.extract_bispectrum_features(denoised_y, sr)
             
             # Combine all features in the same order as training
+            # IMPORTANT: The training data (MASTER.csv) contains duplicate bispectrum features
+            # This results in 44 total features (not 36) to match what the scaler expects
+            # Feature breakdown:
+            #   - MFCC: 13 features
+            #   - Spectral (Centroid, Bandwidth, Rolloff): 3 features  
+            #   - Zero Crossing Rate: 1 feature
+            #   - RMS Energy: 1 feature
+            #   - DWT (D1, D2, D3, A3 means/stds): 8 features
+            #   - Envelope (RMS, Hilbert): 2 features
+            #   - Bispectrum (first set): 8 features
+            #   - Bispectrum (duplicate set): 8 features
+            # Total: 44 features
+            #
+            # NOTE: If you want to use only 36 features (without duplicates), you must:
+            #   1. Retrain the model with cleaned data (removing duplicate columns)
+            #   2. Save a new scaler and model
+            #   3. Update this function to remove the duplicate bispectrum_features line
+            
             feature_vector = np.concatenate([
                 mfcc_mean,                    # 13 features
                 [spec_centroid, spec_bw, spec_rolloff],  # 3 features
@@ -251,8 +269,18 @@ class EngineFaultDetector:
                 [rms_val],                    # 1 feature
                 dwt_feats,                    # 8 features
                 [rms_env_mean, hilbert_env_mean],  # 2 features
-                bispectrum_features           # 8 features
+                bispectrum_features,          # 8 features (first bispectrum set)
+                bispectrum_features           # 8 features (duplicate bispectrum set to match training)
             ])
+            
+            # Validate feature count matches scaler expectation
+            expected_features = self.scaler.mean_.shape[0] if self.scaler is not None else None
+            if expected_features and feature_vector.shape[0] != expected_features:
+                raise ValueError(
+                    f"Feature count mismatch: Extracted {feature_vector.shape[0]} features, "
+                    f"but scaler expects {expected_features}. "
+                    f"Please ensure feature extraction matches training pipeline."
+                )
             
             return feature_vector
             
