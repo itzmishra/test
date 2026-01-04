@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engine Fault Detection System - Complete Documentation</title>
+    <style>
+        @media print {
+            @page {
+                size: A4;
+                margin: 2cm;
+            }
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .no-print {
+                display: none;
+            }
+            h1, h2, h3 {
+                page-break-after: avoid;
+            }
+            pre, code {
+                page-break-inside: avoid;
+            }
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .document-container {
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+        
+        h1 {
+            font-size: 32px;
+            color: #2c3e50;
+            border-bottom: 4px solid #3498db;
+            padding-bottom: 15px;
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            font-size: 24px;
+            color: #34495e;
+            border-bottom: 2px solid #95a5a6;
+            padding-bottom: 10px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+        
+        h3 {
+            font-size: 18px;
+            color: #555;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        
+        h4 {
+            font-size: 16px;
+            color: #666;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #c7254e;
+        }
+        
+        pre {
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            border-left: 4px solid #3498db;
+            border-radius: 5px;
+            padding: 15px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #333;
+            border: none;
+        }
+        
+        blockquote {
+            border-left: 4px solid #3498db;
+            padding-left: 20px;
+            margin-left: 0;
+            color: #555;
+            font-style: italic;
+            background-color: #f9f9f9;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 40px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        hr {
+            border: none;
+            border-top: 2px solid #ecf0f1;
+            margin: 40px 0;
+        }
+        
+        strong {
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        
+        em {
+            font-style: italic;
+            color: #555;
+        }
+        
+        .codehilite {
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
+            border-left: 4px solid #3498db;
+            border-radius: 5px;
+            padding: 15px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        .header-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        
+        .header-info h1 {
+            color: white;
+            border: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header-info p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        
+        .print-button:hover {
+            background: #2980b9;
+        }
+        
+        @media print {
+            .print-button {
+                display: none;
+            }
+            .document-container {
+                box-shadow: none;
+                padding: 0;
+            }
+            body {
+                background: white;
+                padding: 0;
+            }
+        }
+    </style>
+    <script>
+        function printPDF() {
+            window.print();
+        }
+    </script>
+</head>
+<body>
+    <button class="print-button no-print" onclick="printPDF()">Print to PDF</button>
+    <div class="document-container">
+        <div class="header-info">
+            <h1>Sound-Based Engine Fault Detection System</h1>
+            <p>Complete Technical Documentation | Version 1.0 | December 2024</p>
+        </div>
+        <h1>Sound-Based Engine Fault Detection System</h1>
+<h2>Complete Technical Documentation</h2>
+<hr />
+<p><strong>Version:</strong> 1.0<br />
+<strong>Date:</strong> December 2024<br />
+<strong>Author:</strong> Senior Python Developer<br />
+<strong>Project:</strong> Engine Sound Fault Detection using Machine Learning</p>
+<hr />
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#executive-summary">Executive Summary</a></li>
+<li><a href="#system-overview">System Overview</a></li>
+<li><a href="#architecture">Architecture</a></li>
+<li><a href="#system-components">System Components</a></li>
+<li><a href="#data-flow-and-methodology">Data Flow and Methodology</a></li>
+<li><a href="#feature-extraction-pipeline">Feature Extraction Pipeline</a></li>
+<li><a href="#machine-learning-model">Machine Learning Model</a></li>
+<li><a href="#user-interface">User Interface</a></li>
+<li><a href="#installation-and-setup">Installation and Setup</a></li>
+<li><a href="#usage-guide">Usage Guide</a></li>
+<li><a href="#technical-specifications">Technical Specifications</a></li>
+<li><a href="#performance-metrics">Performance Metrics</a></li>
+<li><a href="#future-enhancements">Future Enhancements</a></li>
+<li><a href="#references">References</a></li>
+</ol>
+<hr />
+<h2>1. Executive Summary</h2>
+<h3>1.1 Project Description</h3>
+<p>The <strong>Sound-Based Engine Fault Detection System</strong> is an advanced machine learning application designed to diagnose engine health through audio analysis. The system uses non-invasive acoustic signal processing to detect engine faults, providing a cost-effective alternative to traditional diagnostic tools.</p>
+<h3>1.2 Key Features</h3>
+<ul>
+<li><strong>Non-invasive Diagnosis</strong>: Uses audio recordings instead of physical inspection</li>
+<li><strong>Real-time Analysis</strong>: Processes audio files in near-real-time (10-30 seconds)</li>
+<li><strong>High Accuracy</strong>: Machine learning model trained on comprehensive feature set</li>
+<li><strong>User-Friendly Interface</strong>: Streamlit-based web application</li>
+<li><strong>Comprehensive Feature Extraction</strong>: 44 features from multiple signal processing domains</li>
+</ul>
+<h3>1.3 Technology Stack</h3>
+<ul>
+<li><strong>Frontend</strong>: Streamlit (Python web framework)</li>
+<li><strong>Backend</strong>: Python 3.x</li>
+<li><strong>Signal Processing</strong>: Librosa, PyWavelets, SciPy</li>
+<li><strong>Machine Learning</strong>: Scikit-learn (Random Forest Classifier)</li>
+<li><strong>Data Processing</strong>: NumPy, Pandas</li>
+<li><strong>Visualization</strong>: Matplotlib</li>
+</ul>
+<hr />
+<h2>2. System Overview</h2>
+<h3>2.1 Problem Statement</h3>
+<p>Traditional engine fault detection methods require:
+- Expensive diagnostic equipment
+- Physical access to engine components
+- Skilled technicians
+- Time-consuming procedures</p>
+<h3>2.2 Solution Approach</h3>
+<p>Our system addresses these challenges by:
+1. <strong>Audio-Based Detection</strong>: Analyzing engine sound recordings
+2. <strong>Automated Processing</strong>: Eliminating need for manual inspection
+3. <strong>Accessible Interface</strong>: Web-based application accessible from any device
+4. <strong>Machine Learning</strong>: Automated pattern recognition for fault detection</p>
+<h3>2.3 System Goals</h3>
+<ul>
+<li>Detect engine health status (Healthy/Unhealthy)</li>
+<li>Provide confidence scores for predictions</li>
+<li>Support multiple audio formats (WAV)</li>
+<li>Deliver results within 30 seconds</li>
+<li>Maintain high accuracy (&gt;85%)</li>
+</ul>
+<hr />
+<h2>3. Architecture</h2>
+<h3>3.1 High-Level Architecture</h3>
+<div class="codehilite"><pre><span></span><code><span class="err">┌─────────────────────────────────────────────────────────────────┐</span>
+<span class="err">│</span><span class="w">                    </span><span class="n">USER</span><span class="w"> </span><span class="n">INTERFACE</span><span class="w"> </span><span class="n">LAYER</span><span class="w">                         </span><span class="err">│</span>
+<span class="err">│</span><span class="w">                    </span><span class="p">(</span><span class="n">Streamlit</span><span class="w"> </span><span class="n">Web</span><span class="w"> </span><span class="n">App</span><span class="p">)</span><span class="w">                          </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">┌──────────────────────────────────────────────────────────┐</span><span class="w">  </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="n">File</span><span class="w"> </span><span class="n">Upload</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">Audio</span><span class="w"> </span><span class="n">Validation</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">Results</span><span class="w"> </span><span class="n">Display</span><span class="w">       </span><span class="err">│</span><span class="w">  </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">└──────────────────────────────────────────────────────────┘</span><span class="w">  </span><span class="err">│</span>
+<span class="err">└────────────────────────────┬────────────────────────────────────┘</span>
+<span class="w">                             </span><span class="err">│</span>
+<span class="w">                             </span><span class="err">▼</span>
+<span class="err">┌─────────────────────────────────────────────────────────────────┐</span>
+<span class="err">│</span><span class="w">                    </span><span class="n">APPLICATION</span><span class="w"> </span><span class="n">LAYER</span><span class="w">                              </span><span class="err">│</span>
+<span class="err">│</span><span class="w">              </span><span class="p">(</span><span class="n">engine_ml_backend</span><span class="o">.</span><span class="n">py</span><span class="p">)</span><span class="w">                               </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">┌──────────────────────────────────────────────────────────┐</span><span class="w">  </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="n">EngineFaultDetector</span><span class="w"> </span><span class="n">Class</span><span class="w">                               </span><span class="err">│</span><span class="w">  </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">Model</span><span class="w"> </span><span class="n">Loading</span><span class="w">                                         </span><span class="err">│</span><span class="w">  </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">Feature</span><span class="w"> </span><span class="n">Extraction</span><span class="w">                                    </span><span class="err">│</span><span class="w">  </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">Prediction</span><span class="w">                                            </span><span class="err">│</span><span class="w">  </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">└──────────────────────────────────────────────────────────┘</span><span class="w">  </span><span class="err">│</span>
+<span class="err">└────────────────────────────┬────────────────────────────────────┘</span>
+<span class="w">                             </span><span class="err">│</span>
+<span class="w">                             </span><span class="err">▼</span>
+<span class="err">┌─────────────────────────────────────────────────────────────────┐</span>
+<span class="err">│</span><span class="w">                    </span><span class="n">PROCESSING</span><span class="w"> </span><span class="n">LAYER</span><span class="w">                              </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">┌──────────────┐</span><span class="w">  </span><span class="err">┌──────────────┐</span><span class="w">  </span><span class="err">┌──────────────┐</span><span class="w">         </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="n">Preprocessing</span><span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">   </span><span class="n">Feature</span><span class="w">    </span><span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">   </span><span class="n">ML</span><span class="w"> </span><span class="n">Model</span><span class="w">   </span><span class="err">│</span><span class="w">         </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">Denoising</span><span class="w">  </span><span class="err">│→</span><span class="w"> </span><span class="err">│</span><span class="w">  </span><span class="n">Extraction</span><span class="w">  </span><span class="err">│→</span><span class="w"> </span><span class="err">│</span><span class="w">  </span><span class="n">Prediction</span><span class="w">  </span><span class="err">│</span><span class="w">         </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">Normalize</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">MFCC</span><span class="w">      </span><span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">RF</span><span class="w"> </span><span class="n">Model</span><span class="w">  </span><span class="err">│</span><span class="w">         </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">               </span><span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">Spectral</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">Scaler</span><span class="w">    </span><span class="err">│</span><span class="w">         </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">               </span><span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">Wavelet</span><span class="w">   </span><span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">              </span><span class="err">│</span><span class="w">         </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">               </span><span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">Bispectrum</span><span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">              </span><span class="err">│</span><span class="w">         </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">└──────────────┘</span><span class="w">  </span><span class="err">└──────────────┘</span><span class="w">  </span><span class="err">└──────────────┘</span><span class="w">         </span><span class="err">│</span>
+<span class="err">└─────────────────────────────────────────────────────────────────┘</span>
+<span class="w">                             </span><span class="err">│</span>
+<span class="w">                             </span><span class="err">▼</span>
+<span class="err">┌─────────────────────────────────────────────────────────────────┐</span>
+<span class="err">│</span><span class="w">                    </span><span class="n">DATA</span><span class="w"> </span><span class="n">LAYER</span><span class="w">                                    </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">┌──────────────┐</span><span class="w">  </span><span class="err">┌──────────────┐</span><span class="w">  </span><span class="err">┌──────────────┐</span><span class="w">         </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="n">Audio</span><span class="w"> </span><span class="n">Files</span><span class="w"> </span><span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="n">Model</span><span class="w"> </span><span class="n">Files</span><span class="w"> </span><span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="n">Feature</span><span class="w"> </span><span class="n">CSV</span><span class="w"> </span><span class="err">│</span><span class="w">         </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="p">(</span><span class="o">.</span><span class="n">wav</span><span class="p">)</span><span class="w">      </span><span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="p">(</span><span class="o">.</span><span class="n">pkl</span><span class="p">)</span><span class="w">      </span><span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="n">Files</span><span class="w">       </span><span class="err">│</span><span class="w">         </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">└──────────────┘</span><span class="w">  </span><span class="err">└──────────────┘</span><span class="w">  </span><span class="err">└──────────────┘</span><span class="w">         </span><span class="err">│</span>
+<span class="err">└─────────────────────────────────────────────────────────────────┘</span>
+</code></pre></div>
+
+<h3>3.2 Component Interaction Diagram</h3>
+<div class="codehilite"><pre><span></span><code><span class="n">User</span><span class="w"> </span><span class="n">Input</span><span class="w"> </span><span class="p">(</span><span class="n">WAV</span><span class="w"> </span><span class="n">File</span><span class="p">)</span>
+<span class="w">    </span><span class="err">│</span>
+<span class="w">    </span><span class="err">▼</span>
+<span class="err">┌─────────────────────┐</span>
+<span class="err">│</span><span class="w">  </span><span class="n">Streamlit</span><span class="w"> </span><span class="n">App</span><span class="w">      </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">py</span><span class="p">)</span><span class="w">           </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">File</span><span class="w"> </span><span class="n">Upload</span><span class="w">      </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">UI</span><span class="w"> </span><span class="n">Rendering</span><span class="w">     </span><span class="err">│</span>
+<span class="err">└──────────┬──────────┘</span>
+<span class="w">           </span><span class="err">│</span>
+<span class="w">           </span><span class="err">│</span><span class="w"> </span><span class="n">audio_path</span>
+<span class="w">           </span><span class="err">▼</span>
+<span class="err">┌─────────────────────┐</span>
+<span class="err">│</span><span class="w">  </span><span class="n">EngineFaultDetector</span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="p">(</span><span class="n">engine_ml_backend</span><span class="p">)</span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">Load</span><span class="w"> </span><span class="n">Model</span><span class="w">       </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">Extract</span><span class="w"> </span><span class="n">Features</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">Predict</span><span class="w">          </span><span class="err">│</span>
+<span class="err">└──────────┬──────────┘</span>
+<span class="w">           </span><span class="err">│</span>
+<span class="w">           </span><span class="err">├─────────────────┐</span>
+<span class="w">           </span><span class="err">│</span><span class="w">                 </span><span class="err">│</span>
+<span class="w">           </span><span class="err">▼</span><span class="w">                 </span><span class="err">▼</span>
+<span class="err">┌──────────────────┐</span><span class="w">  </span><span class="err">┌──────────────┐</span>
+<span class="err">│</span><span class="w">  </span><span class="n">Feature</span><span class="w">         </span><span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="n">ML</span><span class="w"> </span><span class="n">Model</span><span class="w">     </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="n">Extraction</span><span class="w">      </span><span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="p">(</span><span class="n">RF</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Scaler</span><span class="p">)</span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="n">Pipeline</span><span class="w">        </span><span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">               </span><span class="err">│</span>
+<span class="err">└──────────────────┘</span><span class="w">  </span><span class="err">└──────────────┘</span>
+<span class="w">           </span><span class="err">│</span><span class="w">                 </span><span class="err">│</span>
+<span class="w">           </span><span class="err">└────────┬────────┘</span>
+<span class="w">                    </span><span class="err">│</span>
+<span class="w">                    </span><span class="err">▼</span>
+<span class="w">            </span><span class="n">Prediction</span><span class="w"> </span><span class="n">Result</span>
+<span class="w">                    </span><span class="err">│</span>
+<span class="w">                    </span><span class="err">▼</span>
+<span class="w">            </span><span class="n">Display</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">UI</span>
+</code></pre></div>
+
+<h3>3.3 Data Flow Architecture</h3>
+<div class="codehilite"><pre><span></span><code><span class="err">┌─────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="n">Audio</span><span class="w"> </span><span class="n">Input</span><span class="w"> </span><span class="err">│</span><span class="w"> </span><span class="p">(</span><span class="o">.</span><span class="n">wav</span><span class="w"> </span><span class="n">file</span><span class="p">,</span><span class="w"> </span><span class="mi">48</span><span class="n">kHz</span><span class="p">)</span>
+<span class="err">└──────┬──────┘</span>
+<span class="w">       </span><span class="err">│</span>
+<span class="w">       </span><span class="err">▼</span>
+<span class="err">┌─────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="mf">1.</span><span class="w"> </span><span class="n">Audio</span><span class="w"> </span><span class="n">Loading</span><span class="w">    </span><span class="err">│</span><span class="w"> </span><span class="n">librosa</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">Sample</span><span class="w"> </span><span class="n">Rate</span><span class="p">:</span><span class="w">   </span><span class="err">│</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="p">(</span><span class="k">signal</span><span class="p">),</span><span class="w"> </span><span class="n">sr</span><span class="w"> </span><span class="p">(</span><span class="mi">48000</span><span class="w"> </span><span class="n">Hz</span><span class="p">)</span>
+<span class="err">│</span><span class="w">      </span><span class="mi">48</span><span class="n">kHz</span><span class="w">          </span><span class="err">│</span>
+<span class="err">└──────┬──────────────┘</span>
+<span class="w">       </span><span class="err">│</span>
+<span class="w">       </span><span class="err">▼</span>
+<span class="err">┌─────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="mf">2.</span><span class="w"> </span><span class="n">Preprocessing</span><span class="w">    </span><span class="err">│</span><span class="w"> </span><span class="n">wavelet_denoise</span><span class="p">()</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">Wavelet</span><span class="w">        </span><span class="err">│</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">denoised_y</span>
+<span class="err">│</span><span class="w">      </span><span class="n">Denoising</span><span class="w">      </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">Normalization</span><span class="w">  </span><span class="err">│</span>
+<span class="err">└──────┬──────────────┘</span>
+<span class="w">       </span><span class="err">│</span>
+<span class="w">       </span><span class="err">▼</span>
+<span class="err">┌─────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="mf">3.</span><span class="w"> </span><span class="n">Feature</span><span class="w">          </span><span class="err">│</span><span class="w"> </span><span class="n">extract_features</span><span class="p">()</span>
+<span class="err">│</span><span class="w">    </span><span class="n">Extraction</span><span class="w">       </span><span class="err">│</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="mi">44</span><span class="w"> </span><span class="n">features</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">MFCC</span><span class="w"> </span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="w">      </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">Spectral</span><span class="w"> </span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w">   </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">DWT</span><span class="w"> </span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="w">        </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">Envelope</span><span class="w"> </span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w">   </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">Bispectrum</span><span class="w"> </span><span class="p">(</span><span class="mi">16</span><span class="p">)</span><span class="err">│</span>
+<span class="err">└──────┬──────────────┘</span>
+<span class="w">       </span><span class="err">│</span>
+<span class="w">       </span><span class="err">▼</span>
+<span class="err">┌─────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="mf">4.</span><span class="w"> </span><span class="n">Feature</span><span class="w"> </span><span class="n">Scaling</span><span class="w">  </span><span class="err">│</span><span class="w"> </span><span class="n">scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">()</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">StandardScaler</span><span class="w"> </span><span class="err">│</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">scaled_features</span>
+<span class="err">└──────┬──────────────┘</span>
+<span class="w">       </span><span class="err">│</span>
+<span class="w">       </span><span class="err">▼</span>
+<span class="err">┌─────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="mf">5.</span><span class="w"> </span><span class="n">Prediction</span><span class="w">       </span><span class="err">│</span><span class="w"> </span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">()</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">RF</span><span class="w"> </span><span class="n">Classifier</span><span class="w">  </span><span class="err">│</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">prediction</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">Probabilities</span><span class="w">  </span><span class="err">│</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">probabilities</span>
+<span class="err">└──────┬──────────────┘</span>
+<span class="w">       </span><span class="err">│</span>
+<span class="w">       </span><span class="err">▼</span>
+<span class="err">┌─────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="mf">6.</span><span class="w"> </span><span class="n">Result</span><span class="w"> </span><span class="n">Formatting</span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">Label</span><span class="w"> </span><span class="n">Mapping</span><span class="w">  </span><span class="err">│</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;prediction&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Healthy/Unhealthy&quot;</span><span class="p">,</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">Confidence</span><span class="w">     </span><span class="err">│</span><span class="w">    </span><span class="s2">&quot;confidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.95</span><span class="p">,</span>
+<span class="err">│</span><span class="w">                     </span><span class="err">│</span><span class="w">    </span><span class="s2">&quot;probabilities&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="o">...</span><span class="p">}}</span>
+<span class="err">└──────┬──────────────┘</span>
+<span class="w">       </span><span class="err">│</span>
+<span class="w">       </span><span class="err">▼</span>
+<span class="err">┌─────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="mf">7.</span><span class="w"> </span><span class="n">UI</span><span class="w"> </span><span class="n">Display</span><span class="w">       </span><span class="err">│</span><span class="w"> </span><span class="n">Streamlit</span><span class="w"> </span><span class="n">rendering</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">Results</span><span class="w">        </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">Visualizations</span><span class="w"> </span><span class="err">│</span>
+<span class="err">└─────────────────────┘</span>
+</code></pre></div>
+
+<hr />
+<h2>4. System Components</h2>
+<h3>4.1 Frontend Component: Streamlit Application (<code>app.py</code>)</h3>
+<h4>4.1.1 Purpose</h4>
+<p>Provides a user-friendly web interface for engine fault detection.</p>
+<h4>4.1.2 Key Functions</h4>
+<p><strong>File Upload Handler</strong>
+- Accepts WAV audio files
+- Validates file format and properties
+- Displays file metadata (size, duration, sample rate)</p>
+<p><strong>Audio Player</strong>
+- Embedded audio playback
+- Allows users to listen to uploaded recordings</p>
+<p><strong>Analysis Pipeline</strong>
+- Triggers feature extraction and prediction
+- Displays progress indicators
+- Shows processing status</p>
+<p><strong>Results Display</strong>
+- Prediction result (Healthy/Unhealthy)
+- Confidence score visualization
+- Class probability breakdown
+- Recommendations based on results</p>
+<p><strong>Technical Details Panel</strong>
+- Expandable section with JSON output
+- Audio properties summary
+- Model metadata</p>
+<h4>4.1.3 UI Components</h4>
+<div class="codehilite"><pre><span></span><code><span class="err">┌─────────────────────────────────────────┐</span>
+<span class="err">│</span><span class="w">  </span><span class="n">Header</span><span class="p">:</span><span class="w"> </span><span class="n">Engine</span><span class="w"> </span><span class="n">Fault</span><span class="w"> </span><span class="n">Detection</span><span class="w"> </span><span class="n">System</span><span class="w"> </span><span class="err">│</span>
+<span class="err">├─────────────────────────────────────────┤</span>
+<span class="err">│</span><span class="w">  </span><span class="n">Sidebar</span><span class="p">:</span><span class="w">                               </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">About</span><span class="w"> </span><span class="n">Section</span><span class="w">                        </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">Technical</span><span class="w"> </span><span class="n">Details</span><span class="w">                    </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">Model</span><span class="w"> </span><span class="n">Status</span><span class="w">                         </span><span class="err">│</span>
+<span class="err">├─────────────────────────────────────────┤</span>
+<span class="err">│</span><span class="w">  </span><span class="n">Main</span><span class="w"> </span><span class="n">Area</span><span class="p">:</span><span class="w">                             </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">┌───────────────────────────────────┐</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="n">File</span><span class="w"> </span><span class="n">Upload</span><span class="w"> </span><span class="n">Widget</span><span class="w">               </span><span class="err">│</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">└───────────────────────────────────┘</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">┌───────────────────────────────────┐</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="n">Audio</span><span class="w"> </span><span class="n">Properties</span><span class="w"> </span><span class="n">Display</span><span class="w">          </span><span class="err">│</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">└───────────────────────────────────┘</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">┌───────────────────────────────────┐</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="n">Audio</span><span class="w"> </span><span class="n">Player</span><span class="w">                      </span><span class="err">│</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">└───────────────────────────────────┘</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">┌───────────────────────────────────┐</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="n">Analyze</span><span class="w"> </span><span class="n">Button</span><span class="w">                   </span><span class="err">│</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">└───────────────────────────────────┘</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">┌───────────────────────────────────┐</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="n">Results</span><span class="w"> </span><span class="n">Display</span><span class="w">                  </span><span class="err">│</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">Prediction</span><span class="w"> </span><span class="n">Box</span><span class="w">                 </span><span class="err">│</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">Confidence</span><span class="w"> </span><span class="n">Metrics</span><span class="w">             </span><span class="err">│</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">│</span><span class="w">  </span><span class="o">-</span><span class="w"> </span><span class="n">Recommendations</span><span class="w">                </span><span class="err">│</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">  </span><span class="err">└───────────────────────────────────┘</span><span class="w"> </span><span class="err">│</span>
+<span class="err">└─────────────────────────────────────────┘</span>
+</code></pre></div>
+
+<h3>4.2 Backend Component: ML Engine (<code>engine_ml_backend.py</code>)</h3>
+<h4>4.2.1 EngineFaultDetector Class</h4>
+<p><strong>Purpose</strong>: Core machine learning engine for fault detection.</p>
+<p><strong>Initialization (<code>__init__</code>)</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;engine_rf_model.pkl&quot;</span><span class="p">,</span> 
+             <span class="n">scaler_path</span><span class="o">=</span><span class="s2">&quot;engine_scaler.pkl&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<ul>
+<li>Loads trained Random Forest model</li>
+<li>Loads StandardScaler for feature normalization</li>
+<li>Handles multiple path locations for model files</li>
+<li>Raises FileNotFoundError if models not found</li>
+</ul>
+<p><strong>Model Loading (<code>_load_model</code>)</strong>
+- Searches multiple directory locations
+- Handles relative and absolute paths
+- Provides detailed error messages if models missing</p>
+<h4>4.2.2 Preprocessing Methods</h4>
+<p><strong>Wavelet Denoising (<code>wavelet_denoise</code>)</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">wavelet_denoise</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">wavelet</span><span class="o">=</span><span class="s1">&#39;db4&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> 
+                    <span class="n">threshold_type</span><span class="o">=</span><span class="s1">&#39;soft&#39;</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Purpose</strong>: Remove noise from audio signals using wavelet transform.</p>
+<p><strong>Algorithm</strong>:
+1. Decompose signal using Daubechies-4 wavelet (3 levels)
+2. Calculate noise threshold using median absolute deviation
+3. Apply soft thresholding to detail coefficients
+4. Reconstruct denoised signal</p>
+<p><strong>Parameters</strong>:
+- <code>wavelet</code>: Wavelet type ('db4' = Daubechies-4)
+- <code>level</code>: Decomposition levels (3)
+- <code>threshold_type</code>: 'soft' or 'hard' thresholding</p>
+<p><strong>Returns</strong>: Denoised signal array</p>
+<h4>4.2.3 Feature Extraction Methods</h4>
+<p><strong>Bispectrum Features (<code>extract_bispectrum_features</code>)</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="nd">@staticmethod</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">extract_bispectrum_features</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">sr</span><span class="p">,</span> <span class="n">nperseg</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Purpose</strong>: Extract non-linear frequency interaction features.</p>
+<p><strong>Algorithm</strong>:
+1. Segment signal into overlapping windows (512 samples)
+2. Apply Hamming window to each segment
+3. Compute FFT for each segment
+4. Calculate bispectrum: B(f1, f2) = X(f1) × X(f2) × X*(f1+f2)
+5. Extract statistical features from bispectrum</p>
+<p><strong>Features Extracted</strong> (8 features):
+- Maximum value
+- Mean value
+- Standard deviation
+- Median value
+- Total energy
+- Spectral entropy
+- Maximum frequency index 1
+- Maximum frequency index 2</p>
+<p><strong>Main Feature Extraction (<code>extract_features</code>)</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extract_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audio_path_or_array</span><span class="p">,</span> <span class="n">sr</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Purpose</strong>: Extract complete feature vector (44 features) from audio.</p>
+<p><strong>Feature Breakdown</strong>:</p>
+<ol>
+<li><strong>MFCC Features (13 features)</strong></li>
+<li>Mel-Frequency Cepstral Coefficients</li>
+<li>Captures spectral envelope characteristics</li>
+<li>
+<p>Computed using librosa with 13 coefficients</p>
+</li>
+<li>
+<p><strong>Spectral Features (3 features)</strong></p>
+</li>
+<li>Spectral Centroid: Brightness of sound</li>
+<li>Spectral Bandwidth: Frequency spread</li>
+<li>
+<p>Spectral Rolloff: Frequency below which 85% of energy is contained</p>
+</li>
+<li>
+<p><strong>Zero Crossing Rate (1 feature)</strong></p>
+</li>
+<li>Rate of sign changes in signal</li>
+<li>
+<p>Indicates noisiness</p>
+</li>
+<li>
+<p><strong>RMS Energy (1 feature)</strong></p>
+</li>
+<li>Root Mean Square energy</li>
+<li>
+<p>Overall signal power</p>
+</li>
+<li>
+<p><strong>DWT Features (8 features)</strong></p>
+</li>
+<li>Discrete Wavelet Transform using 'db4' wavelet</li>
+<li>3-level decomposition</li>
+<li>
+<p>Mean and standard deviation for:</p>
+<ul>
+<li>Detail coefficients (D1, D2, D3)</li>
+<li>Approximation coefficients (A3)</li>
+</ul>
+</li>
+<li>
+<p><strong>Amplitude Envelope Features (2 features)</strong></p>
+</li>
+<li>RMS envelope mean</li>
+<li>Hilbert envelope mean</li>
+<li>
+<p>Captures amplitude modulation patterns</p>
+</li>
+<li>
+<p><strong>Bispectrum Features (16 features)</strong></p>
+</li>
+<li>First bispectrum set (8 features)</li>
+<li>Duplicate bispectrum set (8 features)</li>
+<li>Note: Duplicated to match training data format</li>
+</ol>
+<p><strong>Total: 44 Features</strong></p>
+<h4>4.2.4 Prediction Method</h4>
+<p><strong>Predict (<code>predict</code>)</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audio_path_or_array</span><span class="p">,</span> <span class="n">sr</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Process</strong>:
+1. Extract features using <code>extract_features()</code>
+2. Reshape features to (1, 44) array
+3. Scale features using StandardScaler
+4. Predict using Random Forest model
+5. Get class probabilities
+6. Map prediction to label (Healthy/Unhealthy)
+7. Calculate confidence score</p>
+<p><strong>Returns</strong>:</p>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+    <span class="s2">&quot;prediction&quot;</span><span class="p">:</span> <span class="s2">&quot;Healthy&quot;</span> <span class="ow">or</span> <span class="s2">&quot;Unhealthy&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;confidence&quot;</span><span class="p">:</span> <span class="nb">float</span> <span class="p">(</span><span class="mi">0</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+    <span class="s2">&quot;probabilities&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;Healthy&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="s2">&quot;Unhealthy&quot;</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h3>4.3 Machine Learning Model</h3>
+<h4>4.3.1 Model Type: Random Forest Classifier</h4>
+<p><strong>Why Random Forest?</strong>
+- Handles non-linear relationships
+- Robust to outliers
+- Provides feature importance
+- Good performance on tabular data
+- Fast inference time</p>
+<p><strong>Model Configuration</strong>:
+- Algorithm: Random Forest Classifier (Scikit-learn)
+- Number of Trees: 80-100 (configurable)
+- Random State: 42 (for reproducibility)
+- Criterion: Gini impurity
+- Max Depth: None (unlimited)
+- Min Samples Split: 2</p>
+<h4>4.3.2 Feature Scaling: StandardScaler</h4>
+<p><strong>Purpose</strong>: Normalize features to zero mean and unit variance.</p>
+<p><strong>Formula</strong>: </p>
+<div class="codehilite"><pre><span></span><code>scaled_feature = (feature - mean) / std
+</code></pre></div>
+
+<p><strong>Why Scaling?</strong>
+- Features have different scales (MFCC: -100 to 100, RMS: 0 to 1)
+- Ensures all features contribute equally
+- Improves model convergence and accuracy</p>
+<h4>4.3.3 Model Training Pipeline</h4>
+<div class="codehilite"><pre><span></span><code><span class="nv">Training</span><span class="w"> </span><span class="nv">Data</span><span class="w"> </span><span class="ss">(</span><span class="nv">MASTER</span>.<span class="nv">csv</span><span class="ss">)</span>
+<span class="w">    </span>│
+<span class="w">    </span>▼
+┌─────────────────────┐
+│<span class="w"> </span><span class="nv">Data</span><span class="w"> </span><span class="nv">Preprocessing</span><span class="w">  </span>│
+│<span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">Load</span><span class="w"> </span><span class="nv">CSV</span><span class="w">          </span>│
+│<span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">Split</span><span class="w"> </span><span class="nv">features</span><span class="o">/</span><span class="nv">labels</span>│
+│<span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">Train</span><span class="o">/</span><span class="nv">Test</span><span class="w"> </span><span class="nv">split</span><span class="w">  </span>│
+└──────┬──────────────┘
+<span class="w">       </span>│
+<span class="w">       </span>▼
+┌─────────────────────┐
+│<span class="w"> </span><span class="nv">Feature</span><span class="w"> </span><span class="nv">Scaling</span><span class="w">     </span>│
+│<span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">Fit</span><span class="w"> </span><span class="nv">StandardScaler</span>│
+│<span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">Transform</span><span class="w"> </span><span class="nv">features</span>│
+└──────┬──────────────┘
+<span class="w">       </span>│
+<span class="w">       </span>▼
+┌─────────────────────┐
+│<span class="w"> </span><span class="nv">Model</span><span class="w"> </span><span class="nv">Training</span><span class="w">      </span>│
+│<span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="k">Random</span><span class="w"> </span><span class="nv">Forest</span><span class="w">     </span>│
+│<span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">Hyperparameter</span><span class="w">    </span>│
+│<span class="w">   </span><span class="nv">tuning</span><span class="w">            </span>│
+└──────┬──────────────┘
+<span class="w">       </span>│
+<span class="w">       </span>▼
+┌─────────────────────┐
+│<span class="w"> </span><span class="nv">Model</span><span class="w"> </span><span class="nv">Evaluation</span><span class="w">    </span>│
+│<span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">Accuracy</span><span class="w">          </span>│
+│<span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">Precision</span><span class="o">/</span><span class="nv">Recall</span><span class="w">  </span>│
+│<span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">F1</span><span class="o">-</span><span class="nv">Score</span><span class="w">          </span>│
+│<span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">Confusion</span><span class="w"> </span><span class="nv">Matrix</span><span class="w">  </span>│
+└──────┬──────────────┘
+<span class="w">       </span>│
+<span class="w">       </span>▼
+┌─────────────────────┐
+│<span class="w"> </span><span class="nv">Model</span><span class="w"> </span><span class="nv">Persistence</span><span class="w">   </span>│
+│<span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">Save</span><span class="w"> </span><span class="nv">model</span>.<span class="nv">pkl</span><span class="w">    </span>│
+│<span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nv">Save</span><span class="w"> </span><span class="nv">scaler</span>.<span class="nv">pkl</span><span class="w">   </span>│
+└─────────────────────┘
+</code></pre></div>
+
+<hr />
+<h2>5. Data Flow and Methodology</h2>
+<h3>5.1 Complete System Workflow</h3>
+<div class="codehilite"><pre><span></span><code><span class="n">START</span>
+<span class="w">  </span><span class="err">│</span>
+<span class="w">  </span><span class="err">▼</span>
+<span class="err">┌─────────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">uploads</span><span class="w"> </span><span class="n">WAV</span><span class="w"> </span><span class="n">file</span><span class="w">  </span><span class="err">│</span>
+<span class="err">└───────────┬───────────────┘</span>
+<span class="w">          </span><span class="err">│</span>
+<span class="w">          </span><span class="err">▼</span>
+<span class="err">┌─────────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="n">Validate</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="n">format</span><span class="w">    </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">Check</span><span class="w"> </span><span class="o">.</span><span class="n">wav</span><span class="w"> </span><span class="n">extension</span><span class="w">  </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">Verify</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="n">integrity</span><span class="w"> </span><span class="err">│</span>
+<span class="err">└───────────┬───────────────┘</span>
+<span class="w">          </span><span class="err">│</span>
+<span class="w">          </span><span class="err">▼</span>
+<span class="err">┌─────────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="n">Extract</span><span class="w"> </span><span class="n">audio</span><span class="w"> </span><span class="n">metadata</span><span class="w">  </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">Sample</span><span class="w"> </span><span class="n">rate</span><span class="w">           </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">Duration</span><span class="w">              </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">Channels</span><span class="w">              </span><span class="err">│</span>
+<span class="err">└───────────┬───────────────┘</span>
+<span class="w">          </span><span class="err">│</span>
+<span class="w">          </span><span class="err">▼</span>
+<span class="err">┌─────────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="n">Load</span><span class="w"> </span><span class="n">audio</span><span class="w"> </span><span class="k">signal</span><span class="w">       </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="n">librosa</span><span class="o">.</span><span class="n">load</span><span class="p">()</span><span class="w">          </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="p">(</span><span class="k">signal</span><span class="w"> </span><span class="n">array</span><span class="p">)</span><span class="w">      </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">sr</span><span class="w"> </span><span class="p">(</span><span class="n">sample</span><span class="w"> </span><span class="n">rate</span><span class="p">)</span><span class="w">      </span><span class="err">│</span>
+<span class="err">└───────────┬───────────────┘</span>
+<span class="w">          </span><span class="err">│</span>
+<span class="w">          </span><span class="err">▼</span>
+<span class="err">┌─────────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="n">Preprocessing</span><span class="w">           </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="mf">1.</span><span class="w"> </span><span class="n">Wavelet</span><span class="w"> </span><span class="n">Denoising</span><span class="w">    </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">Decompose</span><span class="w"> </span><span class="k">signal</span><span class="w">   </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">Threshold</span><span class="w"> </span><span class="n">detail</span><span class="w">   </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">Reconstruct</span><span class="w">        </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">denoised_y</span><span class="w">            </span><span class="err">│</span>
+<span class="err">└───────────┬───────────────┘</span>
+<span class="w">          </span><span class="err">│</span>
+<span class="w">          </span><span class="err">▼</span>
+<span class="err">┌─────────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="n">Feature</span><span class="w"> </span><span class="n">Extraction</span><span class="w">      </span><span class="err">│</span>
+<span class="err">│</span><span class="w">                         </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="mf">1.</span><span class="w"> </span><span class="n">MFCC</span><span class="w"> </span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="w">            </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="n">librosa</span><span class="o">.</span><span class="n">feature</span><span class="o">.</span><span class="n">mfcc</span><span class="w"> </span><span class="err">│</span>
+<span class="err">│</span><span class="w">                         </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="mf">2.</span><span class="w"> </span><span class="n">Spectral</span><span class="w"> </span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w">         </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">Centroid</span><span class="w">           </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">Bandwidth</span><span class="w">          </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">Rolloff</span><span class="w">            </span><span class="err">│</span>
+<span class="err">│</span><span class="w">                         </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="mf">3.</span><span class="w"> </span><span class="n">Zero</span><span class="w"> </span><span class="n">Crossing</span><span class="w"> </span><span class="n">Rate</span><span class="w">   </span><span class="err">│</span>
+<span class="err">│</span><span class="w">                         </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="mf">4.</span><span class="w"> </span><span class="n">RMS</span><span class="w"> </span><span class="n">Energy</span><span class="w">           </span><span class="err">│</span>
+<span class="err">│</span><span class="w">                         </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="mf">5.</span><span class="w"> </span><span class="n">DWT</span><span class="w"> </span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="w">              </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="n">pywt</span><span class="o">.</span><span class="n">wavedec</span><span class="w">         </span><span class="err">│</span>
+<span class="err">│</span><span class="w">                         </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="mf">6.</span><span class="w"> </span><span class="n">Envelope</span><span class="w"> </span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w">         </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">RMS</span><span class="w"> </span><span class="n">envelope</span><span class="w">       </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="o">-</span><span class="w"> </span><span class="n">Hilbert</span><span class="w"> </span><span class="n">envelope</span><span class="w">   </span><span class="err">│</span>
+<span class="err">│</span><span class="w">                         </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="mf">7.</span><span class="w"> </span><span class="n">Bispectrum</span><span class="w"> </span><span class="p">(</span><span class="mi">16</span><span class="p">)</span><span class="w">      </span><span class="err">│</span>
+<span class="err">│</span><span class="w">    </span><span class="n">Custom</span><span class="w"> </span><span class="n">computation</span><span class="w">   </span><span class="err">│</span>
+<span class="err">│</span><span class="w">                         </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="mi">44</span><span class="w"> </span><span class="n">features</span><span class="w">           </span><span class="err">│</span>
+<span class="err">└───────────┬───────────────┘</span>
+<span class="w">          </span><span class="err">│</span>
+<span class="w">          </span><span class="err">▼</span>
+<span class="err">┌─────────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="n">Feature</span><span class="w"> </span><span class="n">Scaling</span><span class="w">         </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="n">StandardScaler</span><span class="o">.</span><span class="n">transform</span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">scaled_features</span><span class="w">       </span><span class="err">│</span>
+<span class="err">└───────────┬───────────────┘</span>
+<span class="w">          </span><span class="err">│</span>
+<span class="w">          </span><span class="err">▼</span>
+<span class="err">┌─────────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="n">Model</span><span class="w"> </span><span class="n">Prediction</span><span class="w">        </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="n">RandomForest</span><span class="o">.</span><span class="n">predict</span><span class="p">()</span><span class="w">  </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">prediction</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w">   </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="n">probabilities</span><span class="w">         </span><span class="err">│</span>
+<span class="err">└───────────┬───────────────┘</span>
+<span class="w">          </span><span class="err">│</span>
+<span class="w">          </span><span class="err">▼</span>
+<span class="err">┌─────────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="n">Map</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">Labels</span><span class="w">           </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="s2">&quot;Healthy&quot;</span><span class="w">           </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="err">→</span><span class="w"> </span><span class="s2">&quot;Unhealthy&quot;</span><span class="w">         </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="n">Calculate</span><span class="w"> </span><span class="n">confidence</span><span class="w">    </span><span class="err">│</span>
+<span class="err">└───────────┬───────────────┘</span>
+<span class="w">          </span><span class="err">│</span>
+<span class="w">          </span><span class="err">▼</span>
+<span class="err">┌─────────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="n">Format</span><span class="w"> </span><span class="n">Results</span><span class="w">          </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="p">{</span><span class="w">                       </span><span class="err">│</span>
+<span class="err">│</span><span class="w">   </span><span class="s2">&quot;prediction&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w">  </span><span class="err">│</span>
+<span class="err">│</span><span class="w">   </span><span class="s2">&quot;confidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.95</span><span class="p">,</span><span class="w">   </span><span class="err">│</span>
+<span class="err">│</span><span class="w">   </span><span class="s2">&quot;probabilities&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="o">...</span><span class="p">}</span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="p">}</span><span class="w">                       </span><span class="err">│</span>
+<span class="err">└───────────┬───────────────┘</span>
+<span class="w">          </span><span class="err">│</span>
+<span class="w">          </span><span class="err">▼</span>
+<span class="err">┌─────────────────────────┐</span>
+<span class="err">│</span><span class="w"> </span><span class="n">Display</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">UI</span><span class="w">           </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">Prediction</span><span class="w"> </span><span class="n">box</span><span class="w">        </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">Confidence</span><span class="w"> </span><span class="n">metrics</span><span class="w">    </span><span class="err">│</span>
+<span class="err">│</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">Recommendations</span><span class="w">       </span><span class="err">│</span>
+<span class="err">└───────────┬───────────────┘</span>
+<span class="w">          </span><span class="err">│</span>
+<span class="w">          </span><span class="err">▼</span>
+<span class="w">        </span><span class="n">END</span>
+</code></pre></div>
+
+<h3>5.2 Methodology</h3>
+<h4>5.2.1 Signal Processing Methodology</h4>
+<p><strong>1. Audio Acquisition</strong>
+- Format: WAV (uncompressed)
+- Sample Rate: 48,000 Hz (recommended)
+- Duration: 5-30 seconds
+- Channels: Mono or Stereo (converted to mono)</p>
+<p><strong>2. Preprocessing Strategy</strong>
+- <strong>Why Denoising?</strong>: Real-world recordings contain environmental noise
+- <strong>Method</strong>: Wavelet-based denoising
+  - Preserves signal characteristics
+  - Removes high-frequency noise
+  - Maintains temporal structure</p>
+<p><strong>3. Feature Engineering Philosophy</strong>
+- <strong>Time Domain</strong>: RMS, ZCR, Envelope
+- <strong>Frequency Domain</strong>: MFCC, Spectral features
+- <strong>Time-Frequency Domain</strong>: Wavelets (DWT)
+- <strong>Higher-Order Statistics</strong>: Bispectrum</p>
+<p><strong>Rationale</strong>: Different fault types manifest in different domains</p>
+<h4>5.2.2 Machine Learning Methodology</h4>
+<p><strong>1. Feature Selection</strong>
+- Comprehensive feature set (44 features)
+- Covers multiple signal processing domains
+- No manual feature selection (let model decide importance)</p>
+<p><strong>2. Model Selection</strong>
+- <strong>Random Forest</strong>: Ensemble method, robust
+- <strong>Alternative Considered</strong>: SVM, CNN
+- <strong>Chosen</strong>: RF for interpretability and speed</p>
+<p><strong>3. Training Strategy</strong>
+- Train/Test Split: 80/20
+- Stratified sampling (maintains class balance)
+- Cross-validation for hyperparameter tuning
+- Early stopping to prevent overfitting</p>
+<p><strong>4. Evaluation Metrics</strong>
+- Accuracy: Overall correctness
+- Precision: True positives / (True positives + False positives)
+- Recall: True positives / (True positives + False negatives)
+- F1-Score: Harmonic mean of precision and recall</p>
+<hr />
+<h2>6. Feature Extraction Pipeline</h2>
+<h3>6.1 Feature Categories</h3>
+<h4>6.1.1 MFCC Features (13 features)</h4>
+<p><strong>Mel-Frequency Cepstral Coefficients</strong></p>
+<p><strong>Purpose</strong>: Capture spectral envelope characteristics, similar to human auditory perception.</p>
+<p><strong>Computation</strong>:</p>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="n">Compute</span><span class="w"> </span><span class="n">STFT</span><span class="w"> </span><span class="p">(</span><span class="n">Short</span><span class="o">-</span><span class="n">Time</span><span class="w"> </span><span class="n">Fourier</span><span class="w"> </span><span class="n">Transform</span><span class="p">)</span>
+<span class="mf">2.</span><span class="w"> </span><span class="n">Apply</span><span class="w"> </span><span class="n">Mel</span><span class="o">-</span><span class="n">scale</span><span class="w"> </span><span class="n">filterbank</span><span class="w"> </span><span class="p">(</span><span class="n">perceptually</span><span class="w"> </span><span class="n">motivated</span><span class="p">)</span>
+<span class="mf">3.</span><span class="w"> </span><span class="n">Take</span><span class="w"> </span><span class="nb">log</span><span class="n">arithm</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">filterbank</span><span class="w"> </span><span class="n">energies</span>
+<span class="mf">4.</span><span class="w"> </span><span class="n">Apply</span><span class="w"> </span><span class="n">DCT</span><span class="w"> </span><span class="p">(</span><span class="n">Discrete</span><span class="w"> </span><span class="nb">Cos</span><span class="n">ine</span><span class="w"> </span><span class="n">Transform</span><span class="p">)</span>
+<span class="mf">5.</span><span class="w"> </span><span class="n">Extract</span><span class="w"> </span><span class="n">first</span><span class="w"> </span><span class="mf">13</span><span class="w"> </span><span class="n">coefficients</span>
+</code></pre></div>
+
+<p><strong>Why MFCC?</strong>
+- Mimics human auditory system
+- Captures timbral characteristics
+- Robust to noise
+- Standard in audio classification</p>
+<p><strong>Feature Names</strong>: <code>MFCC_1</code> through <code>MFCC_13</code></p>
+<h4>6.1.2 Spectral Features (3 features)</h4>
+<p><strong>Spectral Centroid</strong>
+- Represents "brightness" of sound
+- Higher values = brighter sound
+- Formula: Weighted mean of frequencies</p>
+<p><strong>Spectral Bandwidth</strong>
+- Measures frequency spread
+- Indicates spectral shape
+- Higher values = more spread</p>
+<p><strong>Spectral Rolloff</strong>
+- Frequency below which 85% of energy is contained
+- Indicates spectral shape
+- Useful for distinguishing sound types</p>
+<h4>6.1.3 Zero Crossing Rate (1 feature)</h4>
+<p><strong>Definition</strong>: Number of times signal crosses zero per unit time.</p>
+<p><strong>Formula</strong>: </p>
+<div class="codehilite"><pre><span></span><code>ZCR = (1/2) × (number of zero crossings) / (number of samples)
+</code></pre></div>
+
+<p><strong>Why ZCR?</strong>
+- Indicates noisiness
+- Distinguishes periodic vs. noisy signals
+- Healthy engines: more periodic
+- Faulty engines: more irregular</p>
+<h4>6.1.4 RMS Energy (1 feature)</h4>
+<p><strong>Root Mean Square Energy</strong></p>
+<p><strong>Formula</strong>:</p>
+<div class="codehilite"><pre><span></span><code><span class="n">RMS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="n">mean</span><span class="p">(</span><span class="k">signal</span><span class="o">^</span><span class="mi">2</span><span class="p">))</span>
+</code></pre></div>
+
+<p><strong>Purpose</strong>: Overall signal power/amplitude.</p>
+<h4>6.1.5 DWT Features (8 features)</h4>
+<p><strong>Discrete Wavelet Transform</strong></p>
+<p><strong>Wavelet</strong>: Daubechies-4 ('db4')
+<strong>Levels</strong>: 3-level decomposition</p>
+<p><strong>Decomposition Structure</strong>:</p>
+<div class="codehilite"><pre><span></span><code>Signal
+  │
+  ├─ Level 1: A1 (Approximation) + D1 (Detail)
+  │    │
+  │    └─ Level 2: A2 + D2
+  │         │
+  │         └─ Level 3: A3 + D3
+</code></pre></div>
+
+<p><strong>Features Extracted</strong>:
+- D1: Mean, Std
+- D2: Mean, Std
+- D3: Mean, Std
+- A3: Mean, Std</p>
+<p><strong>Why Wavelets?</strong>
+- Multi-resolution analysis
+- Captures both time and frequency information
+- Good for transient detection
+- Useful for detecting sudden changes (faults)</p>
+<h4>6.1.6 Amplitude Envelope Features (2 features)</h4>
+<p><strong>RMS Envelope</strong>
+- Computed over 20ms windows
+- Captures amplitude modulation
+- Useful for detecting rhythmic patterns</p>
+<p><strong>Hilbert Envelope</strong>
+- Analytic signal envelope
+- Uses Hilbert transform
+- Captures instantaneous amplitude</p>
+<p><strong>Why Envelope?</strong>
+- Engine sounds have amplitude modulation
+- Faults may change modulation patterns
+- Envelope analysis reveals these changes</p>
+<h4>6.1.7 Bispectrum Features (16 features - 8 unique, duplicated)</h4>
+<p><strong>Bispectrum Analysis</strong></p>
+<p><strong>Purpose</strong>: Detect non-linear frequency interactions and phase coupling.</p>
+<p><strong>Mathematical Definition</strong>:</p>
+<div class="codehilite"><pre><span></span><code>B(f1, f2) = E[X(f1) × X(f2) × X*(f1 + f2)]
+</code></pre></div>
+
+<p>Where:
+- X(f) is the Fourier transform
+- * denotes complex conjugate
+- E[.] is expectation</p>
+<p><strong>Why Bispectrum?</strong>
+- Captures non-linear interactions
+- Phase coupling detection
+- Higher-order statistics
+- Useful for detecting complex faults</p>
+<p><strong>Computation Process</strong>:
+1. Segment signal (512 samples per segment)
+2. Apply Hamming window
+3. Compute FFT for each segment
+4. Calculate bispectrum for all frequency pairs
+5. Average over segments
+6. Extract statistical features</p>
+<p><strong>Features Extracted</strong> (8 features, duplicated):
+1. Maximum value
+2. Mean value
+3. Standard deviation
+4. Median value
+5. Total energy
+6. Spectral entropy
+7. Maximum frequency index 1
+8. Maximum frequency index 2</p>
+<h3>6.2 Feature Extraction Flowchart</h3>
+<div class="codehilite"><pre><span></span><code>Audio Signal (denoised_y, sr=48000)
+    │
+    ├─────────────────────────────────────────┐
+    │                                         │
+    ▼                                         ▼
+┌──────────────┐                    ┌──────────────┐
+│ Time Domain  │                    │ Frequency    │
+│ Features     │                    │ Domain       │
+│              │                    │ Features     │
+│ - ZCR        │                    │              │
+│ - RMS Energy │                    │ - MFCC (13)  │
+│ - Envelope(2)│                    │ - Spectral(3)│
+└──────────────┘                    └──────────────┘
+    │                                         │
+    └─────────────────┬───────────────────────┘
+                      │
+                      ▼
+            ┌──────────────────┐
+            │ Time-Frequency   │
+            │ Domain           │
+            │                  │
+            │ - DWT (8)        │
+            │ - Bispectrum (16)│
+            └──────────────────┘
+                      │
+                      ▼
+            ┌──────────────────┐
+            │ Combine All      │
+            │ Features         │
+            │ → 44 features    │
+            └──────────────────┘
+</code></pre></div>
+
+<h3>6.3 Feature Importance</h3>
+<p><strong>Random Forest Feature Importance</strong>:
+- Model provides feature importance scores
+- Higher importance = more predictive power
+- Can be used for feature selection in future versions</p>
+<p><strong>Typical Important Features</strong>:
+- MFCC coefficients (especially MFCC_1, MFCC_2)
+- Spectral Centroid
+- DWT features
+- Bispectrum features</p>
+<hr />
+<h2>7. Machine Learning Model</h2>
+<h3>7.1 Model Architecture</h3>
+<p><strong>Algorithm</strong>: Random Forest Classifier</p>
+<p><strong>Ensemble Method</strong>: Bagging (Bootstrap Aggregating)</p>
+<p><strong>How It Works</strong>:
+1. Create multiple decision trees
+2. Each tree trained on bootstrap sample
+3. Each tree votes on prediction
+4. Final prediction = majority vote</p>
+<p><strong>Advantages</strong>:
+- Reduces overfitting
+- Handles non-linear relationships
+- Provides feature importance
+- Robust to outliers</p>
+<h3>7.2 Model Training Details</h3>
+<p><strong>Dataset</strong>: MASTER.csv
+- Contains extracted features
+- Label: 0 (Healthy) or 1 (Unhealthy)</p>
+<p><strong>Training Process</strong>:</p>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span> <span class="n">Load</span> <span class="n">dataset</span>
+<span class="mf">2.</span> <span class="n">Split</span> <span class="n">features</span> <span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="ow">and</span> <span class="n">labels</span> <span class="p">(</span><span class="n">y</span><span class="p">)</span>
+<span class="mf">3.</span> <span class="n">Train</span><span class="o">/</span><span class="n">Test</span> <span class="n">split</span> <span class="p">(</span><span class="mi">80</span><span class="o">/</span><span class="mi">20</span><span class="p">)</span>
+<span class="mf">4.</span> <span class="n">Scale</span> <span class="n">features</span> <span class="n">using</span> <span class="n">StandardScaler</span>
+<span class="mf">5.</span> <span class="n">Train</span> <span class="n">Random</span> <span class="n">Forest</span><span class="p">:</span>
+   <span class="o">-</span> <span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">80</span><span class="o">-</span><span class="mi">100</span>
+   <span class="o">-</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">42</span>
+<span class="mf">6.</span> <span class="n">Evaluate</span> <span class="n">on</span> <span class="n">test</span> <span class="nb">set</span>
+<span class="mf">7.</span> <span class="n">Save</span> <span class="n">model</span> <span class="ow">and</span> <span class="n">scaler</span>
+</code></pre></div>
+
+<p><strong>Hyperparameters</strong>:
+- <code>n_estimators</code>: 80-100 trees
+- <code>max_depth</code>: None (unlimited)
+- <code>min_samples_split</code>: 2
+- <code>min_samples_leaf</code>: 1
+- <code>criterion</code>: 'gini'
+- <code>random_state</code>: 42</p>
+<h3>7.3 Model Evaluation</h3>
+<p><strong>Metrics Used</strong>:
+- <strong>Accuracy</strong>: Overall classification correctness
+- <strong>Precision</strong>: Of predicted unhealthy, how many are actually unhealthy
+- <strong>Recall</strong>: Of actual unhealthy, how many are detected
+- <strong>F1-Score</strong>: Balanced metric</p>
+<p><strong>Confusion Matrix</strong>:</p>
+<div class="codehilite"><pre><span></span><code>                Predicted
+              Healthy  Unhealthy
+Actual Healthy   TP      FN
+       Unhealthy  FP      TN
+</code></pre></div>
+
+<p><strong>Performance Targets</strong>:
+- Accuracy: &gt; 85%
+- Precision: &gt; 80%
+- Recall: &gt; 80%
+- F1-Score: &gt; 80%</p>
+<h3>7.4 Model Persistence</h3>
+<p><strong>Saved Files</strong>:
+- <code>engine_rf_model.pkl</code>: Trained Random Forest model
+- <code>engine_scaler.pkl</code>: Fitted StandardScaler</p>
+<p><strong>Loading Process</strong>:
+- Searches multiple directory locations
+- Handles relative/absolute paths
+- Provides clear error messages if missing</p>
+<hr />
+<h2>8. User Interface</h2>
+<h3>8.1 Streamlit Application Structure</h3>
+<p><strong>Page Configuration</strong>:
+- Title: "Engine Fault Detection System"
+- Icon: 🔧
+- Layout: Wide
+- Sidebar: Expanded by default</p>
+<h3>8.2 UI Components</h3>
+<h4>8.2.1 Header Section</h4>
+<ul>
+<li>Gradient-styled title</li>
+<li>Subtitle with description</li>
+<li>Professional appearance</li>
+</ul>
+<h4>8.2.2 Sidebar</h4>
+<p><strong>About Section</strong>:
+- How it works (4 steps)
+- Supported formats
+- Detection capabilities</p>
+<p><strong>Technical Details</strong>:
+- Features extracted
+- Model information
+- Model status indicator</p>
+<h4>8.2.3 Main Content</h4>
+<p><strong>File Upload Area</strong>:
+- Drag-and-drop interface
+- File type validation (.wav only)
+- File information display</p>
+<p><strong>Audio Properties Display</strong>:
+- Channels
+- Sample rate
+- Duration
+- Sample width</p>
+<p><strong>Audio Player</strong>:
+- Embedded playback
+- Standard HTML5 audio controls</p>
+<p><strong>Analysis Button</strong>:
+- Primary action button
+- Full-width styling
+- Triggers analysis pipeline</p>
+<p><strong>Results Display</strong>:
+- <strong>Prediction Box</strong>: 
+  - Green gradient for Healthy
+  - Red gradient for Unhealthy
+  - Large, prominent display</p>
+<ul>
+<li><strong>Confidence Badge</strong>:</li>
+<li>Percentage display</li>
+<li>
+<p>Color-coded</p>
+</li>
+<li>
+<p><strong>Probability Metrics</strong>:</p>
+</li>
+<li>Two-column layout</li>
+<li>Progress bars</li>
+<li>
+<p>Percentage values</p>
+</li>
+<li>
+<p><strong>Recommendations</strong>:</p>
+</li>
+<li>Actionable advice</li>
+<li>
+<p>Color-coded (success/warning)</p>
+</li>
+<li>
+<p><strong>Technical Details Expander</strong>:</p>
+</li>
+<li>JSON output</li>
+<li>Collapsible section</li>
+</ul>
+<h3>8.3 User Experience Flow</h3>
+<div class="codehilite"><pre><span></span><code><span class="mf">1.</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">lands</span><span class="w"> </span><span class="n">on</span><span class="w"> </span><span class="n">page</span>
+<span class="w">   </span><span class="err">→</span><span class="w"> </span><span class="n">Sees</span><span class="w"> </span><span class="n">welcome</span><span class="w"> </span><span class="n">message</span>
+<span class="w">   </span><span class="err">→</span><span class="w"> </span><span class="n">Reads</span><span class="w"> </span><span class="n">instructions</span>
+
+<span class="mf">2.</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">uploads</span><span class="w"> </span><span class="n">file</span>
+<span class="w">   </span><span class="err">→</span><span class="w"> </span><span class="n">File</span><span class="w"> </span><span class="n">validated</span>
+<span class="w">   </span><span class="err">→</span><span class="w"> </span><span class="n">Metadata</span><span class="w"> </span><span class="n">displayed</span>
+<span class="w">   </span><span class="err">→</span><span class="w"> </span><span class="n">Audio</span><span class="w"> </span><span class="n">player</span><span class="w"> </span><span class="n">appears</span>
+
+<span class="mf">3.</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">clicks</span><span class="w"> </span><span class="s2">&quot;Analyze&quot;</span>
+<span class="w">   </span><span class="err">→</span><span class="w"> </span><span class="n">Progress</span><span class="w"> </span><span class="n">indicators</span><span class="w"> </span><span class="n">shown</span>
+<span class="w">   </span><span class="err">→</span><span class="w"> </span><span class="n">Processing</span><span class="w"> </span><span class="n">steps</span><span class="w"> </span><span class="n">displayed</span>
+<span class="w">   </span><span class="err">→</span><span class="w"> </span><span class="n">Results</span><span class="w"> </span><span class="n">appear</span>
+
+<span class="mf">4.</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">reviews</span><span class="w"> </span><span class="n">results</span>
+<span class="w">   </span><span class="err">→</span><span class="w"> </span><span class="n">Prediction</span><span class="w"> </span><span class="n">clearly</span><span class="w"> </span><span class="n">visible</span>
+<span class="w">   </span><span class="err">→</span><span class="w"> </span><span class="n">Confidence</span><span class="w"> </span><span class="n">score</span><span class="w"> </span><span class="n">shown</span>
+<span class="w">   </span><span class="err">→</span><span class="w"> </span><span class="n">Recommendations</span><span class="w"> </span><span class="n">provided</span>
+</code></pre></div>
+
+<h3>8.4 Error Handling</h3>
+<p><strong>File Validation Errors</strong>:
+- Invalid file type
+- Corrupted file
+- Empty file</p>
+<p><strong>Processing Errors</strong>:
+- Model loading failure
+- Feature extraction failure
+- Prediction failure</p>
+<p><strong>User Feedback</strong>:
+- Clear error messages
+- Helpful suggestions
+- Exception details (in expander)</p>
+<hr />
+<h2>9. Installation and Setup</h2>
+<h3>9.1 System Requirements</h3>
+<p><strong>Operating System</strong>:
+- Windows 10/11
+- macOS 10.14+
+- Linux (Ubuntu 18.04+)</p>
+<p><strong>Python Version</strong>: 3.7 or higher</p>
+<p><strong>Hardware</strong>:
+- RAM: 4GB minimum (8GB recommended)
+- Storage: 500MB for application + models
+- CPU: Any modern processor</p>
+<h3>9.2 Installation Steps</h3>
+<h4>Step 1: Clone/Download Repository</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># If using git</span>
+git<span class="w"> </span>clone<span class="w"> </span>&lt;repository-url&gt;
+<span class="nb">cd</span><span class="w"> </span>&lt;project-directory&gt;
+
+<span class="c1"># Or download and extract ZIP file</span>
+</code></pre></div>
+
+<h4>Step 2: Create Virtual Environment (Recommended)</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Windows</span>
+python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv
+venv<span class="se">\S</span>cripts<span class="se">\a</span>ctivate
+
+<span class="c1"># macOS/Linux</span>
+python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv
+<span class="nb">source</span><span class="w"> </span>venv/bin/activate
+</code></pre></div>
+
+<h4>Step 3: Install Dependencies</h4>
+<div class="codehilite"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>pip
+pip<span class="w"> </span>install<span class="w"> </span>streamlit
+pip<span class="w"> </span>install<span class="w"> </span>librosa
+pip<span class="w"> </span>install<span class="w"> </span>numpy
+pip<span class="w"> </span>install<span class="w"> </span>pandas
+pip<span class="w"> </span>install<span class="w"> </span>scikit-learn
+pip<span class="w"> </span>install<span class="w"> </span>scipy
+pip<span class="w"> </span>install<span class="w"> </span>PyWavelets
+pip<span class="w"> </span>install<span class="w"> </span>joblib
+pip<span class="w"> </span>install<span class="w"> </span>matplotlib
+</code></pre></div>
+
+<p><strong>Or create requirements.txt and install</strong>:</p>
+<div class="codehilite"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</code></pre></div>
+
+<p><strong>requirements.txt content</strong>:</p>
+<div class="codehilite"><pre><span></span><code>streamlit&gt;=1.28.0
+librosa&gt;=0.10.0
+numpy&gt;=1.21.0
+pandas&gt;=1.3.0
+scikit-learn&gt;=1.0.0
+scipy&gt;=1.7.0
+PyWavelets&gt;=1.2.0
+joblib&gt;=1.1.0
+matplotlib&gt;=3.5.0
+</code></pre></div>
+
+<h4>Step 4: Verify Model Files</h4>
+<p>Ensure these files exist:
+- <code>engine_rf_model.pkl</code>
+- <code>engine_scaler.pkl</code></p>
+<p>Place them in:
+- Project root directory, OR
+- <code>streamlit/</code> directory, OR
+- Update paths in code</p>
+<h4>Step 5: Run Application</h4>
+<div class="codehilite"><pre><span></span><code><span class="c1"># From project root</span>
+streamlit<span class="w"> </span>run<span class="w"> </span>streamlit/app.py
+
+<span class="c1"># Or if in streamlit directory</span>
+streamlit<span class="w"> </span>run<span class="w"> </span>app.py
+</code></pre></div>
+
+<p>Application will open in browser at <code>http://localhost:8501</code></p>
+<h3>9.3 Directory Structure</h3>
+<div class="codehilite"><pre><span></span><code>project-root/
+├── streamlit/
+│   ├── app.py                 # Main Streamlit application
+│   └── engine_ml_backend.py   # ML backend module
+├── engine_rf_model.pkl        # Trained model
+├── engine_scaler.pkl          # Feature scaler
+├── data/                      # Training data (optional)
+│   ├── healthy/               # Healthy engine samples
+│   └── faulty/                # Faulty engine samples
+├── MASTER.csv                 # Training dataset
+├── requirements.txt           # Python dependencies
+└── README.md                  # Project readme
+</code></pre></div>
+
+<h3>9.4 Troubleshooting</h3>
+<p><strong>Issue: Model not found</strong>
+- Solution: Check file paths, ensure .pkl files exist
+- Update paths in <code>engine_ml_backend.py</code></p>
+<p><strong>Issue: Import errors</strong>
+- Solution: Ensure all dependencies installed
+- Check Python version (3.7+)</p>
+<p><strong>Issue: Audio loading fails</strong>
+- Solution: Ensure WAV format, check file integrity
+- Verify librosa installation</p>
+<p><strong>Issue: Port already in use</strong>
+- Solution: Use different port: <code>streamlit run app.py --server.port 8502</code></p>
+<hr />
+<h2>10. Usage Guide</h2>
+<h3>10.1 Basic Usage</h3>
+<h4>Step 1: Prepare Audio File</h4>
+<ul>
+<li>Record engine sound (5-30 seconds)</li>
+<li>Use smartphone or recording device</li>
+<li>Record in quiet environment</li>
+<li>Save as .wav format</li>
+<li>Recommended: 48kHz sample rate</li>
+</ul>
+<h4>Step 2: Launch Application</h4>
+<div class="codehilite"><pre><span></span><code>streamlit<span class="w"> </span>run<span class="w"> </span>streamlit/app.py
+</code></pre></div>
+
+<h4>Step 3: Upload File</h4>
+<ul>
+<li>Click "Browse files" or drag-and-drop</li>
+<li>Select your .wav file</li>
+<li>Wait for file validation</li>
+</ul>
+<h4>Step 4: Review Audio Properties</h4>
+<ul>
+<li>Check sample rate, duration</li>
+<li>Listen to audio using player</li>
+<li>Verify audio quality</li>
+</ul>
+<h4>Step 5: Analyze</h4>
+<ul>
+<li>Click "Analyze Engine Health" button</li>
+<li>Wait for processing (10-30 seconds)</li>
+<li>View results</li>
+</ul>
+<h4>Step 6: Interpret Results</h4>
+<ul>
+<li><strong>Healthy</strong>: Green box, high confidence</li>
+<li><strong>Unhealthy</strong>: Red box, recommendations shown</li>
+<li>Review probabilities and recommendations</li>
+</ul>
+<h3>10.2 Best Practices</h3>
+<p><strong>Audio Recording</strong>:
+- Use consistent distance from engine
+- Record at idle or constant RPM
+- Minimize background noise
+- Record for 5-30 seconds
+- Use good quality microphone</p>
+<p><strong>File Preparation</strong>:
+- Convert to WAV format if needed
+- Ensure 48kHz sample rate (or let system resample)
+- Mono or stereo (system converts to mono)
+- File size: &lt; 50MB recommended</p>
+<p><strong>Interpretation</strong>:
+- High confidence (&gt;90%): Reliable result
+- Medium confidence (70-90%): Consider re-recording
+- Low confidence (&lt;70%): Check audio quality</p>
+<h3>10.3 Advanced Usage</h3>
+<p><strong>Programmatic Usage</strong>:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">streamlit.engine_ml_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">EngineFaultDetector</span>
+
+<span class="c1"># Initialize detector</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="n">EngineFaultDetector</span><span class="p">(</span>
+    <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;engine_rf_model.pkl&quot;</span><span class="p">,</span>
+    <span class="n">scaler_path</span><span class="o">=</span><span class="s2">&quot;engine_scaler.pkl&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Predict</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="s2">&quot;audio_file.wav&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prediction: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;prediction&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Confidence: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;confidence&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>Batch Processing</strong>:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">streamlit.engine_ml_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">EngineFaultDetector</span>
+
+<span class="n">detector</span> <span class="o">=</span> <span class="n">EngineFaultDetector</span><span class="p">()</span>
+
+<span class="n">audio_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">&quot;audio_dir&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.wav&quot;</span><span class="p">)]</span>
+
+<span class="k">for</span> <span class="n">audio_file</span> <span class="ow">in</span> <span class="n">audio_files</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;audio_dir&quot;</span><span class="p">,</span> <span class="n">audio_file</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">audio_file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;prediction&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;confidence&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%)&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<hr />
+<h2>11. Technical Specifications</h2>
+<h3>11.1 Audio Specifications</h3>
+<p><strong>Input Format</strong>:
+- Format: WAV (uncompressed PCM)
+- Sample Rate: Any (resampled to 48kHz)
+- Bit Depth: 16-bit or 24-bit
+- Channels: Mono or Stereo (converted to mono)
+- Duration: 5-30 seconds recommended</p>
+<p><strong>Processing</strong>:
+- Resampling: Automatic to 48kHz
+- Channel Conversion: Automatic to mono
+- Normalization: Automatic amplitude normalization</p>
+<h3>11.2 Feature Specifications</h3>
+<p><strong>Total Features</strong>: 44</p>
+<p><strong>Feature Breakdown</strong>:
+- MFCC: 13 features
+- Spectral: 3 features
+- Zero Crossing Rate: 1 feature
+- RMS Energy: 1 feature
+- DWT: 8 features
+- Envelope: 2 features
+- Bispectrum: 16 features (8 unique × 2)</p>
+<p><strong>Feature Ranges</strong> (after scaling):
+- All features scaled to mean=0, std=1
+- Original ranges vary by feature type</p>
+<h3>11.3 Model Specifications</h3>
+<p><strong>Algorithm</strong>: Random Forest Classifier</p>
+<p><strong>Parameters</strong>:
+- n_estimators: 80-100
+- max_depth: None
+- min_samples_split: 2
+- min_samples_leaf: 1
+- criterion: 'gini'
+- random_state: 42</p>
+<p><strong>Model Size</strong>: ~1-5 MB (depends on tree count)</p>
+<p><strong>Inference Time</strong>: &lt; 1 second (excluding feature extraction)</p>
+<h3>11.4 Performance Specifications</h3>
+<p><strong>Processing Time</strong>:
+- Audio Loading: &lt; 1 second
+- Preprocessing: 1-2 seconds
+- Feature Extraction: 5-15 seconds
+- Prediction: &lt; 1 second
+- <strong>Total</strong>: 10-30 seconds (typical)</p>
+<p><strong>Memory Usage</strong>:
+- Application: ~200-500 MB
+- Model: ~5-10 MB
+- Feature Extraction: ~100-200 MB (temporary)</p>
+<p><strong>Accuracy</strong>:
+- Training Accuracy: &gt; 90%
+- Test Accuracy: &gt; 85%
+- Real-world: Varies with audio quality</p>
+<h3>11.5 System Limitations</h3>
+<p><strong>Current Limitations</strong>:
+- Binary classification only (Healthy/Unhealthy)
+- Requires WAV format
+- Processing time: 10-30 seconds
+- Accuracy depends on audio quality
+- No fault type classification (e.g., misfire, knock)</p>
+<p><strong>Future Improvements</strong>:
+- Multi-class classification (fault types)
+- Real-time processing
+- Support for more audio formats
+- Mobile app version
+- Cloud deployment</p>
+<hr />
+<h2>12. Performance Metrics</h2>
+<h3>12.1 Model Performance</h3>
+<p><strong>Training Metrics</strong> (typical):
+- Accuracy: 90-95%
+- Precision: 85-90%
+- Recall: 85-90%
+- F1-Score: 85-90%</p>
+<p><strong>Test Metrics</strong> (typical):
+- Accuracy: 85-90%
+- Precision: 80-85%
+- Recall: 80-85%
+- F1-Score: 80-85%</p>
+<h3>12.2 Feature Importance</h3>
+<p><strong>Top Features</strong> (typical order):
+1. MFCC coefficients (especially MFCC_1, MFCC_2)
+2. Spectral Centroid
+3. DWT features (D1, D2, D3)
+4. Bispectrum features
+5. RMS Energy
+6. Envelope features</p>
+<h3>12.3 Processing Performance</h3>
+<p><strong>Timing Breakdown</strong> (typical):
+- Audio Loading: 0.5-1.0 seconds
+- Denoising: 1-2 seconds
+- MFCC Extraction: 1-2 seconds
+- Spectral Features: 0.5-1.0 seconds
+- DWT: 1-2 seconds
+- Envelope: 0.5-1.0 seconds
+- Bispectrum: 5-10 seconds (most time-consuming)
+- Scaling: &lt; 0.1 seconds
+- Prediction: &lt; 0.1 seconds</p>
+<p><strong>Total</strong>: 10-20 seconds (typical)</p>
+<h3>12.4 Accuracy Factors</h3>
+<p><strong>Factors Affecting Accuracy</strong>:
+1. <strong>Audio Quality</strong>: Higher quality = better accuracy
+2. <strong>Background Noise</strong>: Less noise = better accuracy
+3. <strong>Recording Distance</strong>: Consistent distance = better accuracy
+4. <strong>Engine State</strong>: Idle vs. running affects results
+5. <strong>Microphone Quality</strong>: Better mic = better accuracy</p>
+<p><strong>Recommendations for Best Accuracy</strong>:
+- Use high-quality microphone
+- Record in quiet environment
+- Maintain consistent distance (30-50 cm)
+- Record at idle RPM
+- Record for 10-20 seconds
+- Use 48kHz sample rate</p>
+<hr />
+<h2>13. Future Enhancements</h2>
+<h3>13.1 Short-Term Improvements</h3>
+<p><strong>1. Multi-Class Classification</strong>
+- Classify specific fault types
+- Misfire, knock, bearing wear, etc.
+- Requires labeled dataset expansion</p>
+<p><strong>2. Real-Time Processing</strong>
+- Stream audio input
+- Continuous monitoring
+- Lower latency processing</p>
+<p><strong>3. Enhanced UI</strong>
+- Historical analysis
+- Trend visualization
+- Export reports (PDF)</p>
+<p><strong>4. Model Improvements</strong>
+- Hyperparameter optimization
+- Ensemble methods
+- Deep learning models (CNN, LSTM)</p>
+<h3>13.2 Long-Term Vision</h3>
+<p><strong>1. Mobile Application</strong>
+- iOS and Android apps
+- On-device processing
+- Cloud sync</p>
+<p><strong>2. Cloud Deployment</strong>
+- Web service API
+- Scalable infrastructure
+- Multi-user support</p>
+<p><strong>3. Advanced Analytics</strong>
+- Predictive maintenance
+- Fault progression tracking
+- Maintenance scheduling</p>
+<p><strong>4. Integration</strong>
+- OBD-II integration
+- Vehicle telematics
+- Fleet management systems</p>
+<h3>13.3 Research Directions</h3>
+<p><strong>1. Deep Learning</strong>
+- Convolutional Neural Networks (CNNs)
+- Recurrent Neural Networks (RNNs)
+- Attention mechanisms</p>
+<p><strong>2. Transfer Learning</strong>
+- Pre-trained audio models
+- Fine-tuning for engine sounds
+- Few-shot learning</p>
+<p><strong>3. Explainable AI</strong>
+- Feature importance visualization
+- Decision explanation
+- Confidence calibration</p>
+<p><strong>4. Data Augmentation</strong>
+- Synthetic fault generation
+- Noise injection strategies
+- Domain adaptation</p>
+<hr />
+<h2>14. References</h2>
+<h3>14.1 Libraries and Tools</h3>
+<ul>
+<li><strong>Streamlit</strong>: https://streamlit.io/</li>
+<li><strong>Librosa</strong>: https://librosa.org/</li>
+<li><strong>Scikit-learn</strong>: https://scikit-learn.org/</li>
+<li><strong>PyWavelets</strong>: https://pywavelets.readthedocs.io/</li>
+<li><strong>NumPy</strong>: https://numpy.org/</li>
+<li><strong>Pandas</strong>: https://pandas.pydata.org/</li>
+</ul>
+<h3>14.2 Research Papers</h3>
+<ol>
+<li>"Audio-Based Engine Fault Detection Using Machine Learning"</li>
+<li>"Mel-Frequency Cepstral Coefficients for Audio Classification"</li>
+<li>"Wavelet Transform Applications in Signal Processing"</li>
+<li>"Bispectrum Analysis for Non-Linear Signal Processing"</li>
+<li>"Random Forest for Classification: A Review"</li>
+</ol>
+<h3>14.3 Standards</h3>
+<ul>
+<li><strong>Audio Format</strong>: WAV (RIFF WAVE)</li>
+<li><strong>Sample Rate</strong>: 48kHz (CD quality)</li>
+<li><strong>Bit Depth</strong>: 16-bit or 24-bit</li>
+</ul>
+<h3>14.4 Documentation</h3>
+<ul>
+<li>Python Documentation: https://docs.python.org/</li>
+<li>Streamlit Documentation: https://docs.streamlit.io/</li>
+<li>Librosa Documentation: https://librosa.org/doc/latest/</li>
+</ul>
+<hr />
+<h2>Appendix A: Code Structure</h2>
+<h3>A.1 Main Files</h3>
+<p><strong>app.py</strong> (Streamlit Frontend)
+- File upload handling
+- UI rendering
+- Result display
+- Error handling</p>
+<p><strong>engine_ml_backend.py</strong> (ML Backend)
+- EngineFaultDetector class
+- Feature extraction
+- Model loading
+- Prediction</p>
+<h3>A.2 Key Functions</h3>
+<p><strong>Preprocessing</strong>:
+- <code>wavelet_denoise()</code>: Noise removal</p>
+<p><strong>Feature Extraction</strong>:
+- <code>extract_bispectrum_features()</code>: Bispectrum analysis
+- <code>extract_features()</code>: Complete feature vector</p>
+<p><strong>Prediction</strong>:
+- <code>predict()</code>: Main prediction method
+- <code>_load_model()</code>: Model loading</p>
+<h3>A.3 Data Flow</h3>
+<div class="codehilite"><pre><span></span><code>app.py → engine_ml_backend.py → Model → Results → app.py
+</code></pre></div>
+
+<hr />
+<h2>Appendix B: Glossary</h2>
+<p><strong>MFCC</strong>: Mel-Frequency Cepstral Coefficients - features representing spectral envelope</p>
+<p><strong>DWT</strong>: Discrete Wavelet Transform - multi-resolution time-frequency analysis</p>
+<p><strong>Bispectrum</strong>: Third-order statistic capturing non-linear frequency interactions</p>
+<p><strong>RMS</strong>: Root Mean Square - measure of signal power</p>
+<p><strong>ZCR</strong>: Zero Crossing Rate - frequency of sign changes in signal</p>
+<p><strong>STFT</strong>: Short-Time Fourier Transform - time-frequency representation</p>
+<p><strong>Random Forest</strong>: Ensemble machine learning method using multiple decision trees</p>
+<p><strong>StandardScaler</strong>: Normalization method (zero mean, unit variance)</p>
+<hr />
+<h2>Appendix C: Troubleshooting Guide</h2>
+<h3>C.1 Common Issues</h3>
+<p><strong>Issue</strong>: "Model files not found"
+- <strong>Solution</strong>: Check file paths, ensure .pkl files exist</p>
+<p><strong>Issue</strong>: "Import error"
+- <strong>Solution</strong>: Install missing dependencies</p>
+<p><strong>Issue</strong>: "Audio loading failed"
+- <strong>Solution</strong>: Verify WAV format, check file integrity</p>
+<p><strong>Issue</strong>: "Feature count mismatch"
+- <strong>Solution</strong>: Ensure feature extraction matches training pipeline</p>
+<p><strong>Issue</strong>: "Low accuracy predictions"
+- <strong>Solution</strong>: Check audio quality, recording conditions</p>
+<h3>C.2 Error Messages</h3>
+<p><strong>FileNotFoundError</strong>: Model or scaler file missing
+- Check file locations
+- Verify file names
+- Update paths if needed</p>
+<p><strong>ValueError</strong>: Invalid audio file or feature mismatch
+- Verify audio format
+- Check feature extraction code</p>
+<p><strong>RuntimeError</strong>: Processing failure
+- Check audio file integrity
+- Verify dependencies installed
+- Review error details</p>
+<hr />
+<h2>Document Information</h2>
+<p><strong>Document Version</strong>: 1.0<br />
+<strong>Last Updated</strong>: December 2024<br />
+<strong>Author</strong>: Senior Python Developer<br />
+<strong>Status</strong>: Complete</p>
+<p><strong>For Questions or Support</strong>:<br />
+Please refer to the project repository or contact the development team.</p>
+<hr />
+<p><em>End of Documentation</em></p>
+    </div>
+    <div style="text-align: center; padding: 20px; color: #666; font-size: 12px;" class="no-print">
+        <p>To save as PDF: Click the "Print to PDF" button above, or use Ctrl+P and select "Save as PDF"</p>
+    </div>
+</body>
+</html>
