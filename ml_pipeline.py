@@ -279,18 +279,66 @@ class TwoStageMLPipeline:
             vehicle_scaler_path: Path to vehicle scaler
             fault_model_path: Path to fault model
             fault_scaler_path: Path to fault scaler
-        """
-        if os.path.exists(vehicle_model_path) and os.path.exists(vehicle_scaler_path):
-            self.vehicle_model = joblib.load(vehicle_model_path)
-            self.vehicle_scaler = joblib.load(vehicle_scaler_path)
-        else:
-            print(f"⚠️ Warning: Vehicle model files not found at {vehicle_model_path}")
         
-        if os.path.exists(fault_model_path) and os.path.exists(fault_scaler_path):
-            self.fault_model = joblib.load(fault_model_path)
-            self.fault_scaler = joblib.load(fault_scaler_path)
+        Returns:
+            bool: True if all models loaded successfully, False otherwise
+        
+        Raises:
+            FileNotFoundError: If required model files are missing
+            ValueError: If model loading fails
+        """
+        vehicle_loaded = False
+        fault_loaded = False
+        
+        # Load vehicle models with security validation
+        if os.path.exists(vehicle_model_path) and os.path.exists(vehicle_scaler_path):
+            try:
+                # Security: Validate file paths (prevent path traversal)
+                vehicle_model_abs = os.path.abspath(vehicle_model_path)
+                vehicle_scaler_abs = os.path.abspath(vehicle_scaler_path)
+                
+                # Check for path traversal attempts
+                if '..' in vehicle_model_path or '..' in vehicle_scaler_path:
+                    raise ValueError("Path traversal (..) not allowed in model paths")
+                
+                self.vehicle_model = joblib.load(vehicle_model_path)
+                self.vehicle_scaler = joblib.load(vehicle_scaler_path)
+                vehicle_loaded = True
+            except Exception as e:
+                raise ValueError(f"Failed to load vehicle models: {str(e)}")
         else:
-            print(f"⚠️ Warning: Fault model files not found at {fault_model_path}")
+            missing_files = []
+            if not os.path.exists(vehicle_model_path):
+                missing_files.append(vehicle_model_path)
+            if not os.path.exists(vehicle_scaler_path):
+                missing_files.append(vehicle_scaler_path)
+            raise FileNotFoundError(f"Vehicle model files not found: {', '.join(missing_files)}")
+        
+        # Load fault models with security validation
+        if os.path.exists(fault_model_path) and os.path.exists(fault_scaler_path):
+            try:
+                # Security: Validate file paths (prevent path traversal)
+                fault_model_abs = os.path.abspath(fault_model_path)
+                fault_scaler_abs = os.path.abspath(fault_scaler_path)
+                
+                # Check for path traversal attempts
+                if '..' in fault_model_path or '..' in fault_scaler_path:
+                    raise ValueError("Path traversal (..) not allowed in model paths")
+                
+                self.fault_model = joblib.load(fault_model_path)
+                self.fault_scaler = joblib.load(fault_scaler_path)
+                fault_loaded = True
+            except Exception as e:
+                raise ValueError(f"Failed to load fault models: {str(e)}")
+        else:
+            missing_files = []
+            if not os.path.exists(fault_model_path):
+                missing_files.append(fault_model_path)
+            if not os.path.exists(fault_scaler_path):
+                missing_files.append(fault_scaler_path)
+            raise FileNotFoundError(f"Fault model files not found: {', '.join(missing_files)}")
+        
+        return vehicle_loaded and fault_loaded
     
     def predict(self, audio_path_or_array, sr=None):
         """
@@ -422,6 +470,8 @@ if __name__ == "__main__":
     else:
         print(f"❌ Error: CSV file '{csv_path}' not found.")
         print("Please provide a valid CSV file path as an argument.")
+
+
 
 
 
