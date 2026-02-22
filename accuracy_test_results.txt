@@ -1,0 +1,87 @@
+============================================================
+Model Accuracy Test Results
+============================================================
+
+Training Set Performance:
+------------------------------------------------------------
+Accuracy:  1.0000 (100.00%)
+Precision: 1.0000 (100.00%)
+Recall:    1.0000 (100.00%)
+F1-Score:  1.0000 (100.00%)
+F1-Macro:  1.0000 (100.00%)
+
+Training Set - Per-Class Accuracy:
+------------------------------------------------------------
+Air_Leak:
+  Accuracy:  1.0000 (100.00%)
+  Precision: 1.0000 (100.00%)
+  Recall:    1.0000 (100.00%)
+  F1-Score:  1.0000 (100.00%)
+  Support:   95
+
+Healthy:
+  Accuracy:  1.0000 (100.00%)
+  Precision: 1.0000 (100.00%)
+  Recall:    1.0000 (100.00%)
+  F1-Score:  1.0000 (100.00%)
+  Support:   96
+
+MAP:
+  Accuracy:  1.0000 (100.00%)
+  Precision: 1.0000 (100.00%)
+  Recall:    1.0000 (100.00%)
+  F1-Score:  1.0000 (100.00%)
+  Support:   124
+
+Misfire:
+  Accuracy:  1.0000 (100.00%)
+  Precision: 1.0000 (100.00%)
+  Recall:    1.0000 (100.00%)
+  F1-Score:  1.0000 (100.00%)
+  Support:   97
+
+
+Testing Set Performance:
+------------------------------------------------------------
+Accuracy:  0.9519 (95.19%)
+Precision: 0.9518 (95.18%)
+Recall:    0.9519 (95.19%)
+F1-Score:  0.9517 (95.17%)
+F1-Macro:  0.9489 (94.89%)
+
+Testing Set - Per-Class Accuracy:
+------------------------------------------------------------
+Air_Leak:
+  Accuracy:  0.9583 (95.83%)
+  Precision: 0.9583 (95.83%)
+  Recall:    0.9583 (95.83%)
+  F1-Score:  0.9583 (95.83%)
+  Support:   24
+
+Healthy:
+  Accuracy:  0.9167 (91.67%)
+  Precision: 0.9167 (91.67%)
+  Recall:    0.9167 (91.67%)
+  F1-Score:  0.9167 (91.67%)
+  Support:   24
+
+MAP:
+  Accuracy:  1.0000 (100.00%)
+  Precision: 0.9697 (96.97%)
+  Recall:    1.0000 (100.00%)
+  F1-Score:  0.9846 (98.46%)
+  Support:   32
+
+Misfire:
+  Accuracy:  0.9167 (91.67%)
+  Precision: 0.9565 (95.65%)
+  Recall:    0.9167 (91.67%)
+  F1-Score:  0.9362 (93.62%)
+  Support:   24
+
+
+Comparison:
+------------------------------------------------------------
+Accuracy Difference: 0.0481 (4.81%)
+F1-Score Difference: 0.0483 (4.83%)
+Overfitting Risk: LOW

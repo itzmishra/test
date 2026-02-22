@@ -19,18 +19,11 @@ warnings.filterwarnings("ignore", category=RuntimeWarning, module="lazy_loader")
 
 # ========= PATH SETUP =========
 BASE_DIR = Path(__file__).resolve().parent
-map_DIR = BASE_DIR / "map"
-map_DIR.mkdir(parents=True, exist_ok=True)
+misfire_denoised_DIR = BASE_DIR / "misfire_denoised"
+misfire_denoised_DIR.mkdir(parents=True, exist_ok=True)
 
-file = map_DIR / "58map_aug_4.wav"
-audio_path = Path(file)
-base_name = audio_path.stem
+file = misfire_denoised_DIR / "111unh_denoised.wav"
 
-try:
-    y, sr = librosa.load(file, sr=48000)  # renamed to y (audio) to avoid shadowing
-except Exception as e:
-    print(f"Error loading audio file: {e}")
-    sys.exit(1)
 
 # ---------- Noise Filtering (Wavelet Denoising) ----------
 def wavelet_denoise(x, wavelet='db4', level=3, threshold_type='soft'):
@@ -72,7 +65,7 @@ plt.show()#
 # ---------- Amplitude Envelope + Save as CSV ----------
 time = np.arange(len(y)) / sr
 waveform_data = np.column_stack((time, y))
-csv_file = map_DIR/ f"{base_name}_waveform.csv"
+csv_file = misfire_denoised_DIR/ f"{base_name}_waveform.csv"
 np.savetxt(csv_file, waveform_data, delimiter=",", header="Time(s),Amplitude", comments="")
 print(f"Saved waveform to {csv_file}")
 
@@ -86,7 +79,7 @@ plt.title("Raw Audio Waveform")
 plt.xlabel("Time (s)")
 plt.ylabel("Amplitude")
 plt.tight_layout()
-plt.savefig(map_DIR / f"{base_name}_waveform_raw.png", dpi=300)
+plt.savefig(misfire_denoised_DIR / f"{base_name}_waveform_raw.png", dpi=300)
 plt.show()
 
 # 2) PLOT DENOISED WAVEFORM
@@ -96,7 +89,7 @@ plt.title("Denoised Audio Waveform")
 plt.xlabel("Time (s)")
 plt.ylabel("Amplitude")
 plt.tight_layout()
-plt.savefig(map_DIR / f"{base_name}_waveform_denoised.png", dpi=300)
+plt.savefig(misfire_denoised_DIR / f"{base_name}_waveform_denoised.png", dpi=300)
 plt.show()
 
 # 3) AMPLITUDE ENVELOPE (RMS + HILBERT)
@@ -143,7 +136,7 @@ plt.title("Waveform Loaded from CSV (Time vs Amplitude)")
 plt.xlabel("Time (s)")
 plt.ylabel("Amplitude")
 plt.tight_layout()
-plt.savefig(map_DIR / f"{base_name}_waveform_from_csv.png", dpi=300)
+plt.savefig(misfire_denoised_DIR / f"{base_name}_waveform_from_csv.png", dpi=300)
 plt.show()
 
 # ---------- Spectrogram ----------
@@ -477,17 +470,17 @@ print(combined_vector)
 # SAVE AS A LABELED TABLE FOR ML
 # ============================================================
 df = pd.DataFrame([combined_vector], columns=feature_names)
-df.to_csv( map_DIR / f"{base_name}_engine_features.csv", index=False)
+df.to_csv( misfire_denoised_DIR / f"{base_name}_engine_features.csv", index=False)
 
 print(f"\nSaved feature table as {base_name}_engine_features.csv")
 
 
 # ---------- Save Bispectrum Data (NEW) ----------
-bispectrum_file = map_DIR / f"{base_name}_test_bispectrum.csv"
+bispectrum_file = misfire_denoised_DIR / f"{base_name}_test_bispectrum.csv"
 np.savetxt(bispectrum_file, bispectrum, delimiter=",", header="Bispectrum Matrix", comments="")
 print(f"Saved bispectrum matrix to {bispectrum_file}")
 
-bispectrum_features_file = map_DIR / f"{base_name}_test_bispectrum_features.csv"
+bispectrum_features_file = misfire_denoised_DIR / f"{base_name}_test_bispectrum_features.csv"
 np.savetxt(bispectrum_features_file, bispectrum_features.reshape(1, -1), delimiter=",",
            header="Max,Mean,Std,Median,Energy,Entropy,MaxFreq1,MaxFreq2", comments="")
 print(f"Saved bispectrum features to {bispectrum_features_file}")

@@ -36,7 +36,6 @@ ALLOWED_MIME_TYPES = {'audio/wav', 'audio/x-wav', 'audio/mpeg', 'audio/mp3'}
 
 try:
     from feature_extraction import OptimizedFeatureExtractor
-    from ml_pipeline import TwoStageMLPipeline
     from visualizations import (
         create_all_visualizations, 
         figure_to_base64,
@@ -46,25 +45,16 @@ try:
         plot_amplitude_envelope
     )
     import librosa
-    # Try to import single-stage detector as fallback
-    SINGLE_STAGE_AVAILABLE = False
-    EngineFaultDetector = None
+    # Import ALLiswell integration (required)
     try:
-        import importlib.util
-        streamlit_dir = Path(__file__).parent / "streamlit"
-        backend_path = streamlit_dir / "engine_ml_backend.py"
-        if backend_path.exists():
-            spec = importlib.util.spec_from_file_location("engine_ml_backend", str(backend_path))
-            if spec is not None and spec.loader is not None:
-                engine_ml_backend = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(engine_ml_backend)
-                EngineFaultDetector = engine_ml_backend.EngineFaultDetector
-                SINGLE_STAGE_AVAILABLE = True
-    except Exception:
-        SINGLE_STAGE_AVAILABLE = False
-        EngineFaultDetector = None
+        from alliswell_integration import ALLiswellModelWrapper
+        ALLISWELL_AVAILABLE = True
+    except ImportError:
+        ALLISWELL_AVAILABLE = False
+        st.error("Error: Could not import alliswell_integration. Please ensure alliswell_integration.py exists.")
+        st.stop()
 except ImportError as e:
-    st.error(f"❌ Import Error: {str(e)}")
+    st.error(f"Import Error: {str(e)}")
     st.stop()
 
 # Page configuration
@@ -121,17 +111,14 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state with proper model loading validation and fallback paths
-if 'pipeline' not in st.session_state:
+# Initialize session state with ALLiswell model loading
+if 'model_wrapper' not in st.session_state:
     try:
-        pipeline = TwoStageMLPipeline()
-        
-        # Define all possible model file names
-        two_stage_model_files = {
-            'vehicle_model': 'vehicle_model.pkl',
-            'vehicle_scaler': 'vehicle_scaler.pkl',
-            'fault_model': 'fault_model.pkl',
-            'fault_scaler': 'fault_scaler.pkl'
+        # Define ALLiswell model files (following ALLiswell.py structure)
+        alliswell_model_files = {
+            'model': 'best_engine_model.pkl',
+            'scaler': 'best_engine_scaler.pkl',
+            'encoder': 'label_encoder.pkl'
         }
         
         # Try loading models from multiple possible locations
@@ -140,7 +127,6 @@ if 'pipeline' not in st.session_state:
             os.getcwd(),  # Current working directory
             "",  # Current directory (relative)
             ".",  # Current directory (relative)
-            os.path.join(str(_current_dir), ".."),  # Parent directory
         ]
         
         # Remove duplicates and normalize paths
@@ -148,191 +134,80 @@ if 'pipeline' not in st.session_state:
         
         models_found = False
         found_location = None
-        missing_files = []
         
-        # First, check what files actually exist
-        all_found_models = []
+        # Try to load ALLiswell models
         for base in base_paths:
-            for model_name, model_file in two_stage_model_files.items():
-                model_path = os.path.join(base, model_file) if base else model_file
-                if os.path.exists(model_path):
-                    abs_path = os.path.abspath(model_path)
-                    if abs_path not in [f[1] for f in all_found_models]:
-                        all_found_models.append((model_name, abs_path))
-        
-        # Try to load two-stage models
-        for base in base_paths:
-            vehicle_model_path = os.path.join(base, two_stage_model_files['vehicle_model']) if base else two_stage_model_files['vehicle_model']
-            vehicle_scaler_path = os.path.join(base, two_stage_model_files['vehicle_scaler']) if base else two_stage_model_files['vehicle_scaler']
-            fault_model_path = os.path.join(base, two_stage_model_files['fault_model']) if base else two_stage_model_files['fault_model']
-            fault_scaler_path = os.path.join(base, two_stage_model_files['fault_scaler']) if base else two_stage_model_files['fault_scaler']
+            model_path = os.path.join(base, alliswell_model_files['model']) if base else alliswell_model_files['model']
+            scaler_path = os.path.join(base, alliswell_model_files['scaler']) if base else alliswell_model_files['scaler']
+            encoder_path = os.path.join(base, alliswell_model_files['encoder']) if base else alliswell_model_files['encoder']
             
-            # Check if all required files exist
-            required_files = {
-                'vehicle_model': vehicle_model_path,
-                'vehicle_scaler': vehicle_scaler_path,
-                'fault_model': fault_model_path,
-                'fault_scaler': fault_scaler_path
-            }
-            
-            existing_files = {k: v for k, v in required_files.items() if os.path.exists(v)}
-            
-            if len(existing_files) == 4:
+            if os.path.exists(model_path) and os.path.exists(scaler_path):
                 try:
-                    pipeline.load_models(
-                        vehicle_model_path=vehicle_model_path,
-                        vehicle_scaler_path=vehicle_scaler_path,
-                        fault_model_path=fault_model_path,
-                        fault_scaler_path=fault_scaler_path
+                    # Create ALLiswell model wrapper (following ALLiswell.py approach)
+                    # encoder_path is optional, use it if exists
+                    encoder_to_use = encoder_path if (encoder_path and os.path.exists(encoder_path)) else 'label_encoder.pkl'
+                    model_wrapper = ALLiswellModelWrapper(
+                        model_path=model_path,
+                        scaler_path=scaler_path,
+                        encoder_path=encoder_to_use
                     )
                     models_found = True
                     found_location = base if base else "current directory"
                     break
                 except Exception as e:
                     continue
-            elif len(existing_files) > 0:
-                # Partial match - keep track for error message
-                missing_files = [k for k in required_files.keys() if k not in existing_files]
         
-        # Try default paths (no base path)
+        # Try default paths (no base path) if not found yet
         if not models_found:
-            try:
-                if all(os.path.exists(f) for f in two_stage_model_files.values()):
-                    pipeline.load_models()
+            model_path = alliswell_model_files['model']
+            scaler_path = alliswell_model_files['scaler']
+            encoder_path = alliswell_model_files['encoder']
+            
+            if os.path.exists(model_path) and os.path.exists(scaler_path):
+                try:
+                    encoder_to_use = encoder_path if os.path.exists(encoder_path) else 'label_encoder.pkl'
+                    model_wrapper = ALLiswellModelWrapper(
+                        model_path=model_path,
+                        scaler_path=scaler_path,
+                        encoder_path=encoder_to_use
+                    )
                     models_found = True
                     found_location = "current directory"
-            except Exception as e:
-                pass
+                except Exception as e:
+                    pass
         
-        # If two-stage models not found, try single-stage fallback
-        if not models_found and SINGLE_STAGE_AVAILABLE and EngineFaultDetector is not None:
-            # Try to load single-stage models (engine_rf_model.pkl, engine_scaler.pkl)
-            single_stage_model_files = ['engine_rf_model.pkl', 'engine_scaler.pkl']
-            single_stage_found = False
-            
-            for base in base_paths:
-                model_path = os.path.join(base, single_stage_model_files[0]) if base else single_stage_model_files[0]
-                scaler_path = os.path.join(base, single_stage_model_files[1]) if base else single_stage_model_files[1]
-                
-                if os.path.exists(model_path) and os.path.exists(scaler_path):
-                    try:
-                        # Create adapter wrapper for single-stage detector
-                        single_stage_detector = EngineFaultDetector(model_path, scaler_path)
-                        
-                        # Create adapter class to make it compatible with two-stage interface
-                        class SingleStageAdapter:
-                            """Adapter to make EngineFaultDetector work like TwoStageMLPipeline"""
-                            def __init__(self, detector):
-                                self.detector = detector
-                                self.feature_extractor = OptimizedFeatureExtractor()
-                            
-                            def predict(self, audio_path_or_array, sr=None):
-                                """Predict using single-stage model, format like two-stage"""
-                                # Get prediction from single-stage detector
-                                result = self.detector.predict(audio_path_or_array, sr)
-                                
-                                # Extract features for visualization
-                                feature_data = self.feature_extractor.extract_all_features(audio_path_or_array, sr)
-                                
-                                # Convert to two-stage format
-                                fault_pred = result['prediction']
-                                fault_confidence = result['confidence']
-                                
-                                # Map "Unhealthy" to a fault type
-                                if fault_pred == "Unhealthy":
-                                    # Try to determine fault type from probabilities
-                                    probs = result.get('probabilities', {})
-                                    if len(probs) > 2:
-                                        # Multi-class, use highest non-healthy probability
-                                        unhealthy_probs = {k: v for k, v in probs.items() if k != "Healthy"}
-                                        if unhealthy_probs:
-                                            fault_pred = max(unhealthy_probs.items(), key=lambda x: x[1])[0]
-                                    else:
-                                        fault_pred = "Misfire"  # Default fault type
-                                
-                                return {
-                                    'vehicle': {
-                                        'prediction': 'Other/Unknown',
-                                        'confidence': 0.5,
-                                        'probabilities': {
-                                            'Ford_EcoSport': 0.33,
-                                            'Ford_Figo': 0.33,
-                                            'Other/Unknown': 0.34
-                                        },
-                                        'warning': '⚠️ Single-stage model: Vehicle identification not available'
-                                    },
-                                    'fault': {
-                                        'prediction': fault_pred,
-                                        'confidence': fault_confidence,
-                                        'probabilities': result.get('probabilities', {'Healthy': 0.5, 'Unhealthy': 0.5}),
-                                        'warning': None if fault_confidence > 0.6 else '⚠️ Low confidence prediction'
-                                    },
-                                    'feature_data': feature_data
-                                }
-                        
-                        pipeline = SingleStageAdapter(single_stage_detector)
-                        models_found = True
-                        found_location = f"{base if base else 'current directory'} (single-stage mode)"
-                        st.session_state.model_type = 'single-stage'
-                        break
-                    except Exception as e:
-                        continue
-            
-            # If still not found, raise error
-            if not models_found:
-                error_msg = "❌ No ML models found.\n\n"
-                error_msg += "**Two-stage pipeline requires:**\n"
-                for name, file in two_stage_model_files.items():
-                    error_msg += f"- {file}\n"
-                
-                error_msg += "\n**Single-stage fallback requires:**\n"
-                error_msg += "- engine_rf_model.pkl\n"
-                error_msg += "- engine_scaler.pkl\n"
-                
-                error_msg += "\n**Searched locations:**\n"
-                for path in base_paths[:5]:
-                    error_msg += f"- {os.path.abspath(path) if path else os.getcwd()}\n"
-                
-                if all_found_models:
-                    error_msg += f"\n**Found model files:**\n"
-                    for name, path in all_found_models:
-                        error_msg += f"- {name}: {path}\n"
-                
-                error_msg += "\n💡 **To train models:**\n```bash\npython ml_pipeline.py MASTER.csv\n```"
-                
-                raise FileNotFoundError(error_msg)
-        elif not models_found:
-            # No fallback available
-            error_msg = "❌ Two-stage ML pipeline models not found.\n\n"
+        if not models_found:
+            error_msg = "No ALLiswell ML models found.\n\n"
             error_msg += "**Required files:**\n"
-            for name, file in two_stage_model_files.items():
-                error_msg += f"- {file} ({name.replace('_', ' ').title()})\n"
+            error_msg += f"- {alliswell_model_files['model']}\n"
+            error_msg += f"- {alliswell_model_files['scaler']}\n"
+            error_msg += f"- {alliswell_model_files['encoder']} (optional)\n"
             
             error_msg += "\n**Searched locations:**\n"
             for path in base_paths[:5]:
                 error_msg += f"- {os.path.abspath(path) if path else os.getcwd()}\n"
             
-            if all_found_models:
-                error_msg += f"\n**Found model files (different type):**\n"
-                for name, path in all_found_models:
-                    error_msg += f"- {name}: {path}\n"
-            
-            error_msg += "\n💡 **To train models:**\n```bash\npython ml_pipeline.py MASTER.csv\n```"
+            error_msg += "\n**To train models:**\n```bash\n"
+            error_msg += "# Step 1: Create master CSV\n"
+            error_msg += "python create_master_csv.py\n\n"
+            error_msg += "# Step 2: Train models (tests Random Forest, SVM, XGBoost, Logistic Regression)\n"
+            error_msg += "python ALLiswell.py --csv model_training.csv --save\n"
+            error_msg += "```"
             
             raise FileNotFoundError(error_msg)
         
-        st.session_state.pipeline = pipeline
+        # model_wrapper is guaranteed to be set if models_found is True
+        st.session_state.model_wrapper = model_wrapper  # type: ignore
         st.session_state.models_loaded = True
         st.session_state.model_error = None
         st.session_state.model_location = found_location
-        st.session_state.model_type = st.session_state.get('model_type', 'two-stage')
         
     except (FileNotFoundError, ValueError) as e:
-        st.session_state.pipeline = None
+        st.session_state.model_wrapper = None
         st.session_state.models_loaded = False
         st.session_state.model_error = str(e)
     except Exception as e:
-        st.session_state.pipeline = None
+        st.session_state.model_wrapper = None
         st.session_state.models_loaded = False
         st.session_state.model_error = f"Unexpected error: {str(e)}"
 
@@ -346,11 +221,9 @@ with st.sidebar:
     st.markdown("""
     **How it works:**
     1. Upload an audio file (.wav or .mp3, max 1 MB)
-    2. System extracts audio features using signal processing
-    3. Two-stage ML pipeline analyzes the signal:
-       - **Stage 1:** Vehicle identification
-       - **Stage 2:** Fault detection (vehicle-agnostic)
-    4. Get detailed diagnosis with visualizations
+    2. System extracts audio features (MFCC, DWT, Spectral)
+    3. ML model analyzes the signal using trained Random Forest
+    4. Get detailed fault classification with visualizations
     
     **Supported formats:**
     - WAV files
@@ -358,11 +231,18 @@ with st.sidebar:
     - Maximum size: 1 MB
     - Recommended: 48kHz sample rate
     
-    **Detection capabilities:**
-    - ✅ Healthy engine
-    - ⚠️ Misfire detection
-    - ⚠️ Air intake irregularity
-    - 🚗 Vehicle type identification
+    **Fault Classification:**
+    - ✅ **Healthy** - Engine operating normally
+    - ⚠️ **Misfire** - Engine misfire detected
+    - ⚠️ **MAP** - MAP sensor issue detected
+    - ⚠️ **Air_Leak** - Air leak detected
+    
+    **Model Performance:**
+    - Overall Accuracy: 95.19%
+    - Air_Leak: 95.83%
+    - Healthy: 91.67%
+    - MAP: 100.00%
+    - Misfire: 91.67%
     """)
     
     st.markdown("---")
@@ -375,9 +255,10 @@ with st.sidebar:
     - Bispectrum analysis
     - Amplitude envelope
     
-    **ML Models:**
-    - Stage 1: Random Forest (Vehicle)
-    - Stage 2: Random Forest (Fault)
+    **ML Model:**
+    - Random Forest Classifier
+    - Trained on: Healthy, Misfire, MAP, Air_Leak
+    - Features: MFCC (13), DWT, Spectral, Envelope
     
     **Performance Metrics:**
     - Time Complexity: O(n) where n = audio sample length
@@ -395,12 +276,11 @@ with st.sidebar:
     
     if st.session_state.get('models_loaded', False):
         location = st.session_state.get('model_location', 'unknown location')
-        model_type = st.session_state.get('model_type', 'two-stage')
-        mode_text = "single-stage mode" if model_type == 'single-stage' else "two-stage mode"
-        st.success(f"✅ Models loaded successfully from: {location} ({mode_text})")
+        st.success(f"Models loaded successfully from: {location}")
+        st.info("**Model:** Random Forest (95.19% accuracy)")
     else:
         error_msg = st.session_state.get('model_error', 'Unknown error')
-        st.error(f"❌ Model loading failed")
+        st.error(f"Model loading failed")
         st.markdown(error_msg)
 
 # Main content
@@ -415,23 +295,7 @@ if not st.session_state.get('models_loaded', False):
         # Display error as markdown for better formatting
         st.markdown(error_msg)
     
-    st.info("💡 **To train the required models, run:**\n```bash\npython ml_pipeline.py MASTER.csv\n```")
-    
-    # Check if single-stage models exist
-    single_stage_models = ['engine_rf_model.pkl', 'engine_scaler.pkl']
-    found_single = []
-    for model in single_stage_models:
-        for base in [str(_current_dir), os.getcwd()]:
-            path = os.path.join(base, model)
-            if os.path.exists(path):
-                found_single.append(os.path.abspath(path))
-                break
-    
-    if found_single:
-        st.warning("⚠️ **Note:** Found single-stage models, but two-stage models are required:")
-        for path in found_single:
-            st.text(f"   Found: {path}")
-        st.info("💡 You need to train the two-stage pipeline models using the command above.")
+    st.info("**To train the required models, run:**\n```bash\n# Step 1: Create master CSV\npython create_master_csv.py\n\n# Step 2: Train models\npython ALLiswell.py --csv model_training.csv --save\n```")
     
     st.stop()
 
@@ -596,17 +460,29 @@ if uploaded_file is not None:
                     # Make prediction with validation (if models loaded)
                     result = None
                     if st.session_state.get('models_loaded', False):
-                        status_text.text("🤖 Running ML model prediction...")
-                        pipeline = st.session_state.pipeline
+                        status_text.text("Running ML model prediction...")
+                        model_wrapper = st.session_state.model_wrapper
                         
-                        # Security: Validate pipeline is loaded
-                        if pipeline is not None:
+                        # Security: Validate model is loaded
+                        if model_wrapper is not None:
                             try:
-                                result = pipeline.predict(tmp_path, sr=sr)
+                                # Use ALLiswell model wrapper (following ALLiswell.py approach)
+                                prediction_result = model_wrapper.predict(tmp_path, sr=sr)
+                                
+                                # Format result for display
+                                result = {
+                                    'fault': {
+                                        'prediction': prediction_result['prediction'],
+                                        'confidence': prediction_result['confidence'],
+                                        'probabilities': prediction_result['probabilities'],
+                                        'warning': None if prediction_result['confidence'] > 0.6 else 'Low confidence prediction'
+                                    },
+                                    'feature_data': feature_data
+                                }
                             except Exception as pred_error:
-                                st.warning(f"⚠️ Prediction failed: {str(pred_error)}. Showing visualizations only.")
+                                st.warning(f"Prediction failed: {str(pred_error)}. Showing visualizations only.")
                     else:
-                        st.warning("⚠️ Models not loaded. Showing visualizations only.")
+                        st.warning("Models not loaded. Showing visualizations only.")
                     
                     progress_bar.progress(100)
                     status_text.text("✅ Analysis complete!")
@@ -618,38 +494,30 @@ if uploaded_file is not None:
                     # Display ML prediction results (if available)
                     if result is not None:
                         st.markdown("---")
-                        st.markdown("## 📊 Analysis Results")
+                        st.markdown("## Analysis Results")
                         
-                        # Vehicle prediction
-                        vehicle_result = result['vehicle']
+                        # Fault classification (following ALLiswell.py structure)
                         fault_result = result['fault']
                         
-                        # Vehicle identification
-                        st.markdown("### 🚗 Vehicle Identification")
-                        vehicle_col1, vehicle_col2 = st.columns([2, 1])
-                        
-                        with vehicle_col1:
-                            vehicle_icon = "🚗" if vehicle_result['prediction'] != "Other/Unknown" else "❓"
-                            st.markdown(f"**{vehicle_icon} Detected Vehicle:** {vehicle_result['prediction']}")
-                            st.progress(vehicle_result['confidence'])
-                            st.caption(f"Confidence: {vehicle_result['confidence']*100:.1f}%")
-                        
-                        with vehicle_col2:
-                            st.metric("Confidence", f"{vehicle_result['confidence']*100:.1f}%")
-                        
-                        if vehicle_result.get('warning'):
-                            st.warning(vehicle_result['warning'])
-                        
                         # Fault classification
-                        st.markdown("### ⚙️ Engine Fault Classification")
+                        st.markdown("### Engine Fault Classification")
                         
                         fault_prediction = fault_result['prediction']
                         fault_confidence = fault_result['confidence']
                         
+                        # Map predictions to display names (following ALLiswell.py label structure)
+                        display_names = {
+                            'Healthy': 'HEALTHY ENGINE',
+                            'Misfire': 'MISFIRE DETECTED',
+                            'MAP': 'MAP SENSOR ISSUE',
+                            'Air_Leak': 'AIR LEAK DETECTED'
+                        }
+                        display_name = display_names.get(fault_prediction, fault_prediction.upper())
+                        
                         if fault_prediction == "Healthy":
                             st.markdown(f"""
                             <div class="prediction-box healthy-box">
-                                <h2 style="font-size: 2.5rem; margin: 0;">✅ HEALTHY ENGINE</h2>
+                                <h2 style="font-size: 2.5rem; margin: 0;">HEALTHY ENGINE</h2>
                                 <p style="font-size: 1.2rem; margin-top: 1rem;">Your engine appears to be operating normally.</p>
                                 <div class="confidence-badge" style="background-color: rgba(255,255,255,0.3);">
                                     Confidence: {fault_confidence*100:.1f}%
@@ -659,7 +527,7 @@ if uploaded_file is not None:
                         else:
                             st.markdown(f"""
                             <div class="prediction-box fault-box">
-                                <h2 style="font-size: 2.5rem; margin: 0;">⚠️ FAULT DETECTED: {fault_prediction.upper()}</h2>
+                                <h2 style="font-size: 2.5rem; margin: 0;">FAULT DETECTED: {display_name}</h2>
                                 <p style="font-size: 1.2rem; margin-top: 1rem;">Potential engine issue detected. Please consult a mechanic.</p>
                                 <div class="confidence-badge" style="background-color: rgba(255,255,255,0.3);">
                                     Confidence: {fault_confidence*100:.1f}%
@@ -670,58 +538,85 @@ if uploaded_file is not None:
                         if fault_result.get('warning'):
                             st.warning(fault_result['warning'])
                         
-                        # Detailed probabilities
-                        st.markdown("### 📈 Detailed Probabilities")
+                        # Detailed probabilities (following ALLiswell.py structure)
+                        st.markdown("### Detailed Probabilities")
                         
-                        # Vehicle probabilities
-                        st.markdown("**Vehicle Probabilities:**")
-                        vehicle_prob_cols = st.columns(len(vehicle_result['probabilities']))
-                        for i, (label, prob) in enumerate(vehicle_result['probabilities'].items()):
-                            with vehicle_prob_cols[i]:
-                                st.metric(label, f"{prob*100:.2f}%")
-                                st.progress(prob)
+                        # Fault probabilities for all classes (Healthy, Misfire, MAP, Air_Leak)
+                        st.markdown("**Fault Classification Probabilities:**")
+                        fault_probs = fault_result['probabilities']
+                        fault_prob_cols = st.columns(len(fault_probs))
                         
-                        # Fault probabilities
-                        st.markdown("**Fault Probabilities:**")
-                        fault_prob_cols = st.columns(len(fault_result['probabilities']))
-                        for i, (label, prob) in enumerate(fault_result['probabilities'].items()):
+                        # Define icons and colors for each class
+                        class_info = {
+                            'Healthy': {'icon': '✅', 'color': 'green'},
+                            'Misfire': {'icon': '⚠️', 'color': 'red'},
+                            'MAP': {'icon': '⚠️', 'color': 'orange'},
+                            'Air_Leak': {'icon': '⚠️', 'color': 'orange'}
+                        }
+                        
+                        for i, (label, prob) in enumerate(fault_probs.items()):
                             with fault_prob_cols[i]:
-                                icon = "✅" if label == "Healthy" else "⚠️"
-                                st.metric(f"{icon} {label}", f"{prob*100:.2f}%")
+                                info = class_info.get(label, {'icon': '📊', 'color': 'blue'})
+                                st.metric(f"{info['icon']} {label}", f"{prob*100:.2f}%")
                                 st.progress(prob)
                         
                         # Recommendations
                         st.markdown("---")
-                        st.markdown("### 💡 Recommendations")
+                        st.markdown("### Recommendations")
                         
                         if fault_prediction == "Healthy":
                             st.success("""
-                            ✅ **Engine Status: Normal**
+                            **Engine Status: Normal**
                             - Continue regular maintenance schedule
                             - Monitor engine performance periodically
                             - Schedule routine checkups as recommended by manufacturer
                             - Keep engine clean and well-maintained
                             """)
+                        elif fault_prediction == "Misfire":
+                            st.error(f"""
+                            **Engine Status: Misfire Detected**
+                            - **Immediate Action Recommended**
+                            - Check spark plugs and ignition system
+                            - Inspect fuel injectors
+                            - Verify fuel quality and pressure
+                            - Consult a qualified mechanic for inspection
+                            - Avoid prolonged operation if possible
+                            """)
+                        elif fault_prediction == "MAP":
+                            st.error(f"""
+                            **Engine Status: MAP Sensor Issue Detected**
+                            - **Action Recommended**
+                            - Check MAP sensor connections
+                            - Inspect vacuum lines for leaks
+                            - Verify sensor readings with diagnostic tool
+                            - Consult a qualified mechanic for inspection
+                            """)
+                        elif fault_prediction == "Air_Leak":
+                            st.error(f"""
+                            **Engine Status: Air Leak Detected**
+                            - **Action Recommended**
+                            - Check intake manifold gaskets
+                            - Inspect vacuum hoses for cracks
+                            - Verify throttle body seals
+                            - Consult a qualified mechanic for inspection
+                            """)
                         else:
                             st.error(f"""
-                            ⚠️ **Engine Status: {fault_prediction} Detected**
+                            **Engine Status: {fault_prediction} Detected**
                             - **Immediate Action Recommended**
                             - Consult a qualified mechanic for inspection
                             - Avoid prolonged operation if possible
                             - Check for visible signs of damage or unusual behavior
-                            - Review maintenance history and service records
-                            - Consider diagnostic scan tools for detailed analysis
                             """)
                         
                         # Technical details expander
-                        with st.expander("🔬 View Technical Details"):
+                        with st.expander("View Technical Details"):
                             st.json({
-                                "Vehicle Prediction": vehicle_result['prediction'],
-                                "Vehicle Confidence": f"{vehicle_result['confidence']*100:.2f}%",
                                 "Fault Prediction": fault_result['prediction'],
                                 "Fault Confidence": f"{fault_confidence*100:.2f}%",
-                                "Vehicle Probabilities": vehicle_result['probabilities'],
-                                "Fault Probabilities": fault_result['probabilities'],
+                                "All Probabilities": fault_result['probabilities'],
+                                "Model Type": "Random Forest (ALLiswell)",
+                                "Model Accuracy": "95.19%",
                                 "Audio Properties": {
                                     "Sample Rate": f"{sr} Hz",
                                     "Duration": f"{duration:.2f} seconds",
@@ -840,7 +735,7 @@ if uploaded_file is not None:
                     
                     # Note about visualizations
                     if result is None:
-                        st.info("💡 **Note:** ML predictions require trained models. Visualizations are available for all audio files.")
+                        st.info("**Note:** ML predictions require trained models. Visualizations are available for all audio files.")
                 
                 except Exception as e:
                     st.error(f"❌ **Error during analysis:** {str(e)}")
@@ -869,7 +764,7 @@ if uploaded_file is not None:
 
 else:
     # Welcome message
-    st.info("👆 **Please upload an audio file (.wav or .mp3, max 1 MB) above to begin analysis.**")
+    st.info("**Please upload an audio file (.wav or .mp3, max 1 MB) above to begin analysis.**")
     
     st.markdown("---")
     st.markdown("### 📝 How to Use")

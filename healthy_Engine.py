@@ -10,13 +10,22 @@ import pywt
 from scipy.stats import entropy
 from scipy.signal import hilbert
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 (used by matplotlib for 3D)
+from pathlib import Path
+
 
 # Suppress warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="librosa")
 warnings.filterwarnings("ignore", category=RuntimeWarning, module="lazy_loader")
 
-# ---------- Load Audio ----------
-file = "h14_denoised.wav"
+# ========= PATH SETUP =========
+BASE_DIR = Path(__file__).resolve().parent
+health_denoised_DIR = BASE_DIR / "health_denoised"
+health_denoised_DIR.mkdir(parents=True, exist_ok=True)
+
+file = health_denoised_DIR / "15h_denoised.wav"
+audio_path = Path(file)
+base_name = audio_path.stem
+
 try:
     y, sr = librosa.load(file, sr=48000)  # renamed to y (audio) to avoid shadowing
 except Exception as e:
@@ -63,7 +72,7 @@ plt.show()#
 # ---------- Amplitude Envelope + Save as CSV ----------
 time = np.arange(len(y)) / sr
 waveform_data = np.column_stack((time, y))
-csv_file = "h13_test_waveform.csv"
+csv_file = health_denoised_DIR / f"{base_name}_waveform.csv"
 np.savetxt(csv_file, waveform_data, delimiter=",", header="Time(s),Amplitude", comments="")
 print(f"Saved waveform to {csv_file}")
 
@@ -77,7 +86,7 @@ plt.title("Raw Audio Waveform")
 plt.xlabel("Time (s)")
 plt.ylabel("Amplitude")
 plt.tight_layout()
-plt.savefig("waveform_raw.png", dpi=300)
+plt.savefig(health_denoised_DIR / f"{base_name}_waveform_raw.png", dpi=300)
 plt.show()
 
 # 2) PLOT DENOISED WAVEFORM
@@ -87,7 +96,7 @@ plt.title("Denoised Audio Waveform")
 plt.xlabel("Time (s)")
 plt.ylabel("Amplitude")
 plt.tight_layout()
-plt.savefig("waveform_denoised.png", dpi=300)
+plt.savefig(health_denoised_DIR / f"{base_name}_waveform_denoised.png", dpi=300)
 plt.show()
 
 # 3) AMPLITUDE ENVELOPE (RMS + HILBERT)
@@ -134,7 +143,7 @@ plt.title("Waveform Loaded from CSV (Time vs Amplitude)")
 plt.xlabel("Time (s)")
 plt.ylabel("Amplitude")
 plt.tight_layout()
-plt.savefig("waveform_from_csv.png", dpi=300)
+plt.savefig(health_denoised_DIR / f"{base_name}_waveform_from_csv.png", dpi=300)
 plt.show()
 
 # ---------- Spectrogram ----------
@@ -243,8 +252,8 @@ def extract_swt_features(x, wavelet='db4', level=None, plot=True):
             std = np.std(cD_arr)
             mean = np.mean(cD_arr)
             swt_features.extend([mean, std, energy])
-        # plt.tight_layout()
-        # plt.show()
+        plt.tight_layout()
+        plt.show()
 
     return np.array(swt_features)
 
@@ -468,17 +477,17 @@ print(combined_vector)
 # SAVE AS A LABELED TABLE FOR ML
 # ============================================================
 df = pd.DataFrame([combined_vector], columns=feature_names)
-df.to_csv("h13_engine_features.csv", index=False)
+df.to_csv( health_denoised_DIR / f"{base_name}_engine_features.csv", index=False)
 
-print("\nSaved feature table as engine_features.csv")
+print(f"\nSaved feature table as {base_name}_engine_features.csv")
 
 
 # ---------- Save Bispectrum Data (NEW) ----------
-bispectrum_file = "h13_test_bispectrum.csv"
+bispectrum_file = health_denoised_DIR / f"{base_name}_test_bispectrum.csv"
 np.savetxt(bispectrum_file, bispectrum, delimiter=",", header="Bispectrum Matrix", comments="")
 print(f"Saved bispectrum matrix to {bispectrum_file}")
 
-bispectrum_features_file = "h13_test_bispectrum_features.csv"
+bispectrum_features_file = health_denoised_DIR / f"{base_name}_test_bispectrum_features.csv"
 np.savetxt(bispectrum_features_file, bispectrum_features.reshape(1, -1), delimiter=",",
            header="Max,Mean,Std,Median,Energy,Entropy,MaxFreq1,MaxFreq2", comments="")
 print(f"Saved bispectrum features to {bispectrum_features_file}")
